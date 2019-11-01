@@ -209,45 +209,119 @@ def get_print_cards_inhand(card_distribution,num_players):
 
     return
 
-# determine the winner
-def get_winner(cards_playerwise,num_players):
-    player_cardsuites=[]
-    player_cardvalues=[]
-    player_cardvalues_diff =[0,0,0,0,0,0,0,0,0,0,0,0,0]
-    players_cards_index=[]
-    card_diff_list=[]
+# report for cards in hand
+def get_players_handcard_report(cards_distribution,num_players):
+    report=[]
+    for i in range(1,num_players):
+        player_cardsuites=get_suite_analysis(cards_distribution[i])
+        player_cardvalues=get_value_analysis(cards_distribution[i])
+        cards_index=[]
+        pair_index=[]
+        same_suite=False
 
-    # get all the suites and cards at one place
-    for player in range(0,num_players):
-        player_cardsuites.append(get_suite_analysis(cards_playerwise[player]))
-        player_cardvalues.append(get_value_analysis(cards_playerwise[player])
-
-    # get the card values difference
-    for i in range(0,num_players-1):
-        for j in range(0,13):
-            # first player is the base for difference
-            player_cardvalues_diff[j]=cards_playerwise[i+1][j]-cards_playerwise[0][j]
-
-            # if the comparison doesn't have the cards as player1
-            if player_cardvalues_diff[j]<0:
-                negative_index=j
-            elif player_cardvalues_diff[j]==1:
-                positve_index=j
+        # value analysis
+        for i in range(0,13):
+            if player_cardvalues[i]==1:
+                card_index.append(i)
+            elif player_cardvalues[i]==2:
+                pair_index.append(i)
             else:
-                get_die(3)
-                # check for card combination conditions
-        card_diff_list.append(player_cardvalues_diff)
+                continue
 
-# possible_cominations=["flush","pairs","straight","high_card"]
-#
-#     # if the card combination is a flush
-#     if clubs>0 and diamonds>0 and hearts>0 and spades>0:
-#         possible_cominations=["not_flush"]
-#     elif clubs>=5 or diamonds>=5 or hearts>=5 or spades>=5:
-#         possible_cominations=["flush"]
-#         # is it royal flush
+        # suite analysis
+        for i in range(0,4):
+            if player_cardsuites[i]==2:
+                same_suite=True
+            else:
+                continue
+
+        temp_report=[cards_index,pair_index,same_suite]
+        report.append(temp_report)
+    return report
+
+# initial analysis for cards in hand+table
+def get_players_allcard_report(cards_playerwise,num_players):
+    report=[]
+    for i in range(0,num_players):
+        player_cardsuites=get_suite_analysis(cards_playerwise[i])
+        player_cardvalues=get_value_analysis(cards_playerwise[i])
+        pair_index=[]
+        three_ofakind_index=[]
+        four_ofakind_index=[]
+        flush=False
+
+        for i in range(0,13):
+            # two pair
+            if player_cardvalues[i]==2:
+                pair_index.append(i)
+            # three_ofakind_index
+            elif player_cardvalues[i]==3:
+                three_ofakind_index.append(i)
+            # four_ofakind_index
+            elif player_cardvalues[i]==4:
+                four_ofakind_index.append(i)
+            else:
+                continue
+
+            # suite analysis
+        for i in range(0,4):
+            if player_cardsuites[i]==5:
+                flush=True
+            else:
+                continue
+        temp_report=[pair_index,three_ofakind_index,four_ofakind_index,flush]
+        report.append(temp_report)
+    return report
 
 
+# determine the winner
+def get_winner(cards_playerwise,card_distribution,num_players):
+
+    # in hand card reports
+    card_inhand_reports=get_players_handcard_report(card_distribution,num_players)
+    initial_winner=0 # player0
+    current_winner=0 # player0
+    for i in range(0,num_players):
+
+
+    return
+    # # get the initial reports of cards
+    # player_reports=get_players_allcard_report(cards_playerwise,num_players)
+    # # set initial winner
+    # for
+    # player_cardsuites=[]
+    # player_cardvalues=[]
+    # player_cardvalues_diff =[0,0,0,0,0,0,0,0,0,0,0,0,0]
+    # players_cards_index=[]
+    # card_diff_list=[]
+    # which_player_has_pair=[]
+    # which_card_is_in_pair=[]
+    # winner=0
+    # # get all the suites and cards at one place
+    # for player in range(0,num_players):
+    #     player_cardsuites.append(get_suite_analysis(cards_playerwise[player]))
+    #     player_cardvalues.append(get_value_analysis(cards_playerwise[player]))
+    #
+    # # first player is the base for difference
+    # player0_report=get_first_players_card_report(cards_playerwise[0])
+    # # get the card values difference
+    # for i in range(0,num_players-1):
+    #
+    #     for j in range(0,13):
+    #         # first player is the base for difference
+    #         player_cardvalues_diff[j]=cards_playerwise[i+1][j]-cards_playerwise[0][j]
+    #         # negative index
+    #         if player_cardvalues_diff[j]==-1:
+    #             negative_index=j
+    #         # positive index
+    #         elif player_cardvalues_diff[j]==1:
+    #             positve_index=j
+    #         else:
+    #             get_die(3)
+    #             # check for card combination conditions
+    #
+    #     card_diff_list.append(player_cardvalues_diff)
+    #
     # royal flush
     # straight flush
     # 4 of a kind
@@ -273,5 +347,9 @@ card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
 cards_playerwise=get_cards_playerwise(card_distribution,num_players)
 get_print_cards_inhand(card_distribution,num_players)
 get_print_cards_inhand_and_table(cards_playerwise,num_players)
+
+report0=get_players_card_report(cards_playerwise,num_players)
+
+print "%r" %report0
 
 # who wins
