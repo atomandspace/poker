@@ -74,7 +74,7 @@ def get_distribute_cards(num_players,deck):
     card_distribution_all=[]
     card_distribution_all=table_cards
 
-    for player in range(0,num_players):
+    for player in range(0,dist_centres):
         player_cards=deck[card_index_players:card_index_players+2]
         card_distribution.append(player_cards)
         card_distribution_all=card_distribution_all+player_cards
@@ -203,35 +203,41 @@ def get_print_cards_inhand(card_distribution,num_players):
         cards=card_distribution[player]
         player_cardsuites = get_suite_analysis(cards)
         player_cardvalues = get_value_analysis(cards)
-        print "\nPlayer%d cards: %r" % (player,cards)
-        print "Player%d cardSuite: %r" % (player,player_cardsuites)
-        print "Player%d cardValues: %r" % (player,player_cardvalues)
+        print "\nPlayer%d cards: %r" % (player-1,cards)
+        print "Player%d cardSuite: %r" % (player-1,player_cardsuites)
+        print "Player%d cardValues: %r" % (player-1,player_cardvalues)
 
     return
 
 # report for cards in hand
-def get_players_handcard_report(cards_distribution,num_players):
+def get_players_handcard_report(card_distribution,num_players):
     report=[]
-    for i in range(1,num_players):
-        player_cardsuites=get_suite_analysis(cards_distribution[i])
-        player_cardvalues=get_value_analysis(cards_distribution[i])
+    # separating player hand cards with table cards
+    temp=card_distribution[1:-1]
+
+    for contents in temp:
+        # print i
+        player_cardsuites=get_suite_analysis(contents)
+        player_cardvalues=get_value_analysis(contents)
         cards_index=[]
         pair_index=[]
-        same_suite=False
+        same_suite=0 # False ,avoiding boolean
 
         # value analysis
         for i in range(0,13):
             if player_cardvalues[i]==1:
-                card_index.append(i)
+                cards_index.append(i)
             elif player_cardvalues[i]==2:
                 pair_index.append(i)
+                cards_index.append(i)
+                cards_index.append(i)
             else:
                 continue
 
         # suite analysis
         for i in range(0,4):
             if player_cardsuites[i]==2:
-                same_suite=True
+                same_suite=1 # True ,avoiding boolean
             else:
                 continue
 
@@ -242,13 +248,13 @@ def get_players_handcard_report(cards_distribution,num_players):
 # initial analysis for cards in hand+table
 def get_players_allcard_report(cards_playerwise,num_players):
     report=[]
-    for i in range(0,num_players):
+    for i in range(0,num_players+1):
         player_cardsuites=get_suite_analysis(cards_playerwise[i])
         player_cardvalues=get_value_analysis(cards_playerwise[i])
         pair_index=[]
         three_ofakind_index=[]
         four_ofakind_index=[]
-        flush=False
+        flush=0 # False ,avoiding boolean
 
         for i in range(0,13):
             # two pair
@@ -266,7 +272,7 @@ def get_players_allcard_report(cards_playerwise,num_players):
             # suite analysis
         for i in range(0,4):
             if player_cardsuites[i]==5:
-                flush=True
+                flush=1 # True ,avoiding boolean
             else:
                 continue
         temp_report=[pair_index,three_ofakind_index,four_ofakind_index,flush]
@@ -275,16 +281,29 @@ def get_players_allcard_report(cards_playerwise,num_players):
 
 
 # determine the winner
-def get_winner(cards_playerwise,card_distribution,num_players):
+def get_highcard_winner(cards_playerwise,card_distribution,num_players):
 
     # in hand card reports
     card_inhand_reports=get_players_handcard_report(card_distribution,num_players)
-    initial_winner=0 # player0
+    # initial_winner=0 # player0
+    # print card_inhand_reports
     current_winner=0 # player0
-    for i in range(0,num_players):
+    player0_card_index=card_inhand_reports[0][0]
+    player0_card_index.sort()
+    player0_pair_index=card_inhand_reports[0][1]
+    player0_samesuite_index=card_inhand_reports[0][2]
+    i=0
+    for card_stat in card_inhand_reports:
+        card_stat[0].sort()
+        print "\n%r" %card_stat[0]
+        if card_stat[0][1]>player0_card_index[1] or card_stat[0][0]>player0_card_index[0]:
+            current_winner=i
+        else:
+            continue
+        i=i+1
 
 
-    return
+    return current_winner
     # # get the initial reports of cards
     # player_reports=get_players_allcard_report(cards_playerwise,num_players)
     # # set initial winner
@@ -344,12 +363,17 @@ money_on_table=get_money_on_table()
 # distribute cards
 random.shuffle(deck)
 card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
+# print card_distribution[0:-1]
 cards_playerwise=get_cards_playerwise(card_distribution,num_players)
+# print cards_playerwise
 get_print_cards_inhand(card_distribution,num_players)
 get_print_cards_inhand_and_table(cards_playerwise,num_players)
 
-report0=get_players_card_report(cards_playerwise,num_players)
+report0=get_players_handcard_report(cards_playerwise,num_players)
 
-print "%r" %report0
+# print "%r" %report0
 
+highcard_winner=get_highcard_winner(cards_playerwise,card_distribution,num_players)
+
+print "%r" % highcard_winner
 # who wins
