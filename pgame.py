@@ -258,53 +258,49 @@ def get_players_handcard_report(card_distribution,num_players):
 
 # initial analysis for cards in hand+table
 def get_players_allcard_report(cards_playerwise,num_players):
-    report=[]
-    # print "\ncards"
-    # print cards_playerwise
+    report_index=[]
+    report_status=[]
+
     for contents in cards_playerwise:
-        # print "\nIndividual cards:"
-        # print contents
         player_cardsuites=get_suite_analysis(contents)
         player_cardvalues=get_value_analysis(contents)
-        all_cards_index=[]
-        pair_index=[]
-        three_kind_index=[]
+
+        royal_flush=False
+        straight_flush=False
+        four_kind=False
+        full_house=False
+        flush=False
+        straight=False
+        three_kind=False
+        two_pair=False
+        pair=False
+
+        straight_flush_index=[]
         four_kind_index=[]
         full_house_index=[]
-        flush_card_index=[]
+        flush_index=[]
+        straight_index=[]
+        three_kind_index=[]
         two_pair_index=[]
-        two_pair_available=False
-        pair_available=False # to check for full house
-        three_kind_available=False # to check for full house
-        flush=0 # False ,avoiding boolean
-        flush_cards_index=0 # False ,avoiding boolean , Normal flush
-        royal_flush=0 # False ,avoiding boolean
-        straight_flush_index=[]
-        straight=0 # False ,avoiding boolean
+        pair_index=[]
 
-        # flush
-        for i in range(0,4):
-
-            if player_cardsuites[i]==5:
-                flush=1 # True ,avoiding boolean
-                flush_cards_index=all_cards_index
-                flush_card_index.sort()
-            else:
-                continue
+        all_cards_index=[] # used for straight and flush determination
+        #records index of pair twopair and three kind
 
         # pair, three kind , fourkind ,straight
         for i in range(0,13):
             # pair (includes pair and two pair)
             if player_cardvalues[i]==2:
                 pair_index.append(i)
-                pair_available=True
+                pair=True
             # three_ofakind_index
             elif player_cardvalues[i]==3:
                 three_kind_index.append(i)
-                three_kind_available=True
+                three_kind=True
             # four_ofakind_index
             elif player_cardvalues[i]==4:
                 four_kind_index.append(i)
+                four_kind=True
             # all cards index used for straight
             elif player_cardvalues[i]==2 or player_cardvalues[i]==1 or player_cardvalues[i]==3:
                 all_cards_index.append(i)
@@ -316,41 +312,43 @@ def get_players_allcard_report(cards_playerwise,num_players):
         for i in range(0,4):
 
             if player_cardsuites[i]==5:
-                flush=1 # True ,avoiding boolean
-                flush_cards_index=all_cards_index
-                flush_cards_index.sort()
+                flush=True # True ,avoiding boolean
+                flush_index=all_cards_index
+                flush_index.sort()
             else:
                 continue
-# -------------------------------------------------------------
-        # full house
-        if three_kind_available==True and pair_available==True:
-            pair_index.sort() # highest index for multiple pair
-            three_kind_index.sort() # highest index in case of multiple pair
-        elif len(three_kind_index)==1 and len(pair_index)==1:
-            full_house_index.append(three_kind_index) # one pair and one one three_kind exist
-            full_house_index.append(pair_index)
-        elif len(three_kind_index)==1 and len(pair_index)==2:
-            full_house_index.append(three_kind_index) # two pair and one one three_kind exist
-            full_house_index.append(pair_index[-1])
-        elif len(three_kind_index)==2:
-            full_house_index.append(three_kind_index[0])
-            full_house_index.append(three_kind_index[1])
-        else:
-            # get_die(5)
-            # continue is causing the loop to skip appending reports
-            pair_index=pair_index
 #-------------------------------------------------------------
         # two pair availabilty
         # this section is exclusively placed after full house analysis
         # avoid conflicts with current full_house analysis algo
         if len(pair_index)>1:
-            pair_available=False
+            pair=False
             two_pair_index=pair_index
             pair_index=[]
         elif len(pair_index)==1:
-            pair_available=True
+            pair=True
         else:
-            pair_available=False
+            pair=False
+# -------------------------------------------------------------
+        # full house
+        if three_kind==True and pair==True or two_pair==True:
+            pair_index.sort() # highest index for multiple pair
+            three_kind_index.sort() # highest index in case of multiple pair
+            full_house=True
+            if len(three_kind_index)==1 and pair==True:
+                full_house_index.append(three_kind_index) # one pair and one one three_kind exist
+                full_house_index.append(pair_index)
+            elif len(three_kind_index)==1 and two_pair==True:
+                full_house_index.append(three_kind_index) # two pair and one one three_kind exist
+                full_house_index.append(max(two_pair_index))
+            elif len(three_kind_index)==2:
+                full_house_index.append(three_kind_index[0])
+                full_house_index.append(three_kind_index[1])
+            else:
+                pair_index=pair_index
+        else:
+            pair_index=pair_index
+
 # ------------------------------------------------------------
         # straight
         if len(all_cards_index)>=5:
@@ -359,17 +357,18 @@ def get_players_allcard_report(cards_playerwise,num_players):
 
             if x[0]==8 and x[1]==9 and x[2]==10 and x[3]==11 and x[4]==12:
 
-                if flush==1:
-                    royal_flush=1
+                if flush==True:
+                    royal_flush=True
                 else:
-                    straight=1
+                    royal_flush=False
 
             elif (x[0]+1)==x[1] and (x[1]+1)==x[2] and (x[2]+1)==x[3] and (x[3]+1)==x[4]:
 
-                if flush==1:
+                if flush==True:
                     straight_flush_index=all_cards_index
+                    straight_flush=True
                 else:
-                    straight=1
+                    straight=True
 
             else:
                 # get_die(6)
@@ -381,13 +380,17 @@ def get_players_allcard_report(cards_playerwise,num_players):
             # continue is causing the loop to skip appending reports
             pair_index=pair_index
 
-        temp_report=[royal_flush,straight_flush_index,four_kind_index,full_house_index,
-        flush_cards_index,straight,three_kind_index,two_pair_index, pair_index]
-        # print "\ntemp report"
-        # print temp_report
-        report.append(temp_report)
+        temp1=[royal_flush,straight_flush_index,four_kind_index,
+        full_house_index,flush_index,straight,
+        three_kind_index,two_pair_index, pair_index]
+
+        temp2=[royal_flush,straight_flush,four_kind,full_house,
+        flush,straight,three_kind,two_pair,pair]
+
+        report_index.append(temp1)
+        report_status.append(temp2)
         # print report
-    return report
+    return report_index, report_status
 
 # table cards analysis
 def get_tablecard_report(card_distribution):
@@ -395,35 +398,42 @@ def get_tablecard_report(card_distribution):
     table_cards=card_distribution[0]
     table_cardsuites=get_suite_analysis(table_cards)
     table_cardvalues=get_value_analysis(table_cards)
-    all_cards_index=[]
-    pair_index=[]
-    three_kind_index=[]
+
+    royal_flush=False
+    straight_flush=False
+    four_kind=False
+    full_house=False
+    flush=False
+    straight=False
+    three_kind=False
+    two_pair=False
+    pair=False
+
+    straight_flush_index=[]
     four_kind_index=[]
     full_house_index=[]
-    flush_card_index=[]
+    flush_index=[]
+    straight_index=[]
+    three_kind_index=[]
     two_pair_index=[]
-    two_pair_available=False
-    pair_available=False # to check for full house
-    three_kind_available=False # to check for full house
-    flush=0 # False ,avoiding boolean
-    flush_cards_index=0 # False ,avoiding boolean , Normal flush
-    royal_flush=0 # False ,avoiding boolean
-    straight_flush_index=[]
-    straight=0 # False ,avoiding boolean
+    pair_index=[]
+
+    all_cards_index=[]
 
     # pair, three kind , fourkind ,straight
     for i in range(0,13):
-        # two pair
+        # pair (includes pair and two pair)
         if table_cardvalues[i]==2:
             pair_index.append(i)
-            pair_available=True
+            pair=True
         # three_ofakind_index
         elif table_cardvalues[i]==3:
             three_kind_index.append(i)
-            three_kind_available=True
+            three_kind=True
         # four_ofakind_index
         elif table_cardvalues[i]==4:
             four_kind_index.append(i)
+            four_kind=True
         # all cards index used for straight
         elif table_cardvalues[i]==2 or table_cardvalues[i]==1 or table_cardvalues[i]==3:
             all_cards_index.append(i)
@@ -435,26 +445,13 @@ def get_tablecard_report(card_distribution):
     for i in range(0,4):
 
         if table_cardsuites[i]==5:
-            flush=1 # True ,avoiding boolean
-            flush_cards_index=all_cards_index
-            flush_cards_index.sort()
+            flush=True # True ,avoiding boolean
+            flush_index=all_cards_index
+            flush_index.sort()
         else:
             continue
-
-    # full house
-    if three_kind_available==True and pair_available==True:
-        pair_index.sort() # highest index for multiple pair
-        three_kind_index.sort() # highest index in case of multiple pair
-        full_house_index.append(three_kind_index[0])
-        full_house_index.append(three_kind_index[1])
-    else:
-        # get_die(5)
-        # continue is causing the loop to skip appending reports
-        pair_index=pair_index
 #-------------------------------------------------------------
     # two pair availabilty
-    # this section is exclusively placed after full house analysis
-    # avoid conflicts with current full_house analysis algo
     if len(pair_index)>1:
         pair_available=False
         two_pair_index=pair_index
@@ -463,6 +460,18 @@ def get_tablecard_report(card_distribution):
         pair_available=True
     else:
         pair_available=False
+#-------------------------------------------------------------
+
+    # full house
+    if three_kind==True and pair==True:
+        pair_index.sort() # highest index for multiple pair
+        three_kind_index.sort() # highest index in case of multiple pair
+        full_house_index.append(three_kind_index)
+        full_house_index.append(pair_index)
+    else:
+        # get_die(5)
+        # continue is causing the loop to skip appending reports
+        pair_index=pair_index
 # ------------------------------------------------------------
     # straight
     if len(all_cards_index)>=5:
@@ -471,17 +480,18 @@ def get_tablecard_report(card_distribution):
 
         if x[0]==8 and x[1]==9 and x[2]==10 and x[3]==11 and x[4]==12:
 
-            if flush==1:
-                royal_flush=1
+            if flush==True:
+                royal_flush=True
             else:
-                straight=1
+                royal_flush=False
 
         elif (x[0]+1)==x[1] and (x[1]+1)==x[2] and (x[2]+1)==x[3] and (x[3]+1)==x[4]:
 
-            if flush==1:
+            if flush==True:
                 straight_flush_index=all_cards_index
+                straight_flush=True
             else:
-                straight=1
+                straight=True
 
         else:
             # get_die(6)
@@ -493,12 +503,14 @@ def get_tablecard_report(card_distribution):
         # continue is causing the loop to skip appending reports
         pair_index=pair_index
 
-    report=[royal_flush,straight_flush_index,four_kind_index,full_house_index,
-    flush_cards_index,straight,three_kind_index,two_pair_index,pair_index]
-    # print "\ntemp report"
-    # print temp_report
+    report_index=[royal_flush,straight_flush_index,four_kind_index,
+    full_house_index,flush_index,straight,three_kind_index,
+    two_pair_index, pair_index]
 
-    return report
+    report_status=[royal_flush,straight_flush,four_kind,full_house,
+    flush,straight,three_kind,two_pair,pair]
+
+    return report_index, report_status
 
 # determine the winner
 def get_highcard_winner(card_distribution,num_players):
@@ -532,109 +544,121 @@ def get_highcard_winner(card_distribution,num_players):
 # non high card winner
 def get_winner(cards_playerwise,card_distribution,num_players):
 
-    ar=get_players_allcard_report(cards_playerwise,num_players) # all cards report
-    tr=get_tablecard_report(card_distribution) # table cards report
-    hr=get_players_handcard_report(card_distribution,num_players) # hand card reports
+    ari,ars=get_players_allcard_report(cards_playerwise,num_players) # all cards report
+    tri,trs=get_tablecard_report(card_distribution) # table cards report
+    hri=get_players_handcard_report(card_distribution,num_players) # hand card reports
     highcard_winner=get_highcard_winner(card_distribution,num_players)
-    winner=highcard_winner # 0 corresponds to player0
+    #  wps is winning player report_status
+    wps=ars[highcard_winner] # 0 corresponds to player0
+    wp=highcard_winner # wp is winning player 0 corresponds to player0
     # winner high card winner if it comes to it
-
-    wr=ar[highcard_winner] # winner report
-    winby=9#  0 means player won by royal flush 9 means high card
-    wr_rf=wr[0] # royal flush
-    wr_sfi=wr[1] # straight_flush_index
-    wr_4ki=wr[2] # four_kind_index
-    wr_fhi=wr[3] # full_house_index
-    wr_fi=wr[4] # flush_cards_index
-    wr_si=wr[5] # straight index
-    wr_3ki=wr[6] # three kind index
-    wr_tpi=wr[7] # two pair indices
-    wr_pi=wr[8] # pair indices
 
     # treat table as a special player with just five cards
     # different function is used for getting report to save computation rss
     # append table reports to the allcard report
-    ar.insert(0,tr) # position of players will shift
+    ari.insert(0,tri) # position of players will shift
+    ars.insert(0,trs)
 
-    p_counter=0 # loop counter to keep track who wins
-    # pr is player report
-    for pr in ar:
-        #cv is combination value
-        i=0
-        for cv in pr:
-            if type(cv) is int and cv>wr[i]:
-                print "royal flush"
-                winner=p_counter
-                winby=0
-            elif type(cv) is list and not(cv==[]):
-                cv.sort() # only list can be sorted
-                wr[i].sort() # int values won't appear
-                print "cv: %r"%cv
-                print "wr: %r"%wr[i]
-                # improve algo to include only lists
-                if i==1 and cv[0]>wr[i][0] and winby>0:
-                    print "straight_flush: %r" % cv
-                    winner=p_counter
-                    winby=1
-                elif i==2 and cv[0]>wr[i][0] and winby>1:
-                    print "four of a kind: %r" % cv
-                    winner=p_counter
-                    winby=2
-                elif i==3 and cv[0]>wr[i][0] and winby>2:
-                    print "full house: %r" % cv
-                    winner=p_counter
-                    winby=3
-                elif i==4 and cv[0]>wr[i][0] and winby>3:
-                    print "flush: %r" % cv
-                    winner=p_counter
-                    winby=4
-                elif i==5 and cv[0]>wr[i][0] and winby>4:
-                    print "straight: %r" % cv
-                    winner=p_counter
-                    winby=5
-                elif i==6 and cv[0]>wr[i][0] and winby>5:
-                    print "three of a kind: %r" % cv
-                    winner=p_counter
-                    winby=6
-                elif i==7 and cv[0]>wr[i][0] and winby>6:
-                    print "two pair: %r" % cv
-                    winner=p_counter
-                    winby=7
-                elif i==8 and cv[0]>wr[i][0] and winby>7:
-                    print "pair %r" % cv
-                    winner=p_counter
-                    winby=8
-                else:
-                    i=i
+
+    p_sameCard=[]
+    which_same_combination=[] # rang(0,9) 9 is high_card and 0 is royal_flush
+
+    winby=9 #winning combination of winner
+    p=0 #player counter
+    for pr in ars:
+        # status based winner(s)-----------------------------------
+        # royal_flush
+        if pr[0]==True and winby>0:
+            if wps[0]==True: # +1 as ars inserted with table report
+                p_sameCard.append(wp)
+                p_sameCard.append(p)
+                which_same_combination=0
             else:
-                i=i
-            i=i+1
-        # [royal_flush,straight_flush_index,four_kind_index,full_house_index,
-        # flush_cards_index,straight,three_kind_index,two_pair_index,pair_index]
-        p_counter=p_counter+1
-
+                wp=p
+                winby=0
+        # straight_flush
+        elif pr[1]==True and winby>1:
+            if wps[1]==True: # +1 as ars inserted with table report
+                p_sameCard.append(wp)
+                p_sameCard.append(p)
+                which_same_combination=1
+            else:
+                wp=p
+                winby=1
+        # four_kind
+        elif pr[2]==True and winby>2:
+            if wps[2]==True: # +1 as ars inserted with table report
+                p_sameCard.append(wp)
+                p_sameCard.append(p)
+                which_same_combination=2
+            else:
+                wp=p
+                winby=2
+        # full_house
+        elif pr[3]==True and winby>3:
+            if wps[3]==True: # +1 as ars inserted with table report
+                p_sameCard.append(wp)
+                p_sameCard.append(p)
+                which_same_combination=3
+            else:
+                wp=p
+                winby=3
+        # flush
+        elif pr[4]==True and winby>4:
+            if wps[4]==True: # +1 as ars inserted with table report
+                p_sameCard.append(wp)
+                p_sameCard.append(p)
+                which_same_combination=4
+            else:
+                wp=p
+                winby=4
+        # straight
+        elif pr[5]==True and winby>5:
+            if wps[5]==True: # +1 as ars inserted with table report
+                p_sameCard.append(wp)
+                p_sameCard.append(p)
+                which_same_combination=5
+            else:
+                wp=p
+                winby=5
+        # three_kind
+        elif pr[6]==True and winby>6:
+            if wps[6]==True: # +1 as ars inserted with table report
+                p_sameCard.append(wp)
+                p_sameCard.append(p)
+                which_same_combination=6
+            else:
+                wp=p
+                winby=6
+        # two_pair
+        elif pr[7]==True and winby>7:
+            if wps[7]==True: # +1 as ars inserted with table report
+                p_sameCard.append(wp)
+                p_sameCard.append(p)
+                which_same_combination=7
+            else:
+                wp=p
+                winby=7
+        # pair
+        elif pr[8]==True and winby>8:
+            if wps[8]==True: # +1 as ars inserted with table report
+                p_sameCard.append(wp)
+                p_sameCard.append(p)
+                which_same_combination=8
+            else:
+                wp=p
+                winby=8
+        else:
+            wp=wp
+        # player increment
+        p=p+1
+        # Tie breaker-------------------------------------------
+        # if len(p_sameCard)>0:
+            # w
+    winner=wp
     return winner, winby #,status
 
-    #
-    # straight flush
-    #
-    # full house
-    # flush
-    # straight
-    # 3 of a kind
-    # 2 pair
-    # 1 pair
-    # high card
-# royal flush
-# straight flush
-# 4 of a kind
-# full house
-# flush
-# straight
-# 3 of a kind
-# 2 pair
-# 1 pair
-# high card
+
 # --------------------------------MAIN LOOP---------------------------------------------
 
 # number of players
@@ -658,8 +682,8 @@ report0=get_players_handcard_report(cards_playerwise,num_players)
 highcard_winner=get_highcard_winner(card_distribution,num_players)
 print "High card Winner: Player%r" % highcard_winner
 
-report1=get_players_allcard_report(cards_playerwise,num_players)
-for contents in report1:
+report_index,report_status=get_players_allcard_report(cards_playerwise,num_players)
+for contents in report_status:
     print "\nIndividual reports:"
     print contents
 
