@@ -16,13 +16,22 @@ random.shuffle(deck)
 def get_die(status):
     # if instruction not followed
     if status==0:
-        print ">> Next time put some money on table!"
+        print ">> Next time put some money on table! die(0)"
     elif status==1:
-        print ">> Follow the instructions!"
+        print ">> Follow the instructions! die(1)"
     elif status==2:
-        print ">> This player suite doesn't have cards"
+        print ">> This player suite doesn't have cards die(2)"
     elif status==3:
-        print ">> Check for card combination status"
+        print ">> Check for card combination status die(3)"
+    elif status>=3:
+        print ""
+        # print ">> get all cards report: die(4)"
+    # elif status==5:
+    #     print ">> get all cards report: die(5)"
+    # elif status==6:
+    #     print ">> get all cards report: die(6)"
+    # elif status==7:
+    #     print ">> get all cards report: die(7)"
     else:
         print ">> Good bye!"
 
@@ -232,6 +241,7 @@ def get_players_handcard_report(card_distribution,num_players):
                 cards_index.append(i)
                 cards_index.append(i)
             else:
+                # get_die(5)
                 continue
 
         # suite analysis
@@ -239,6 +249,7 @@ def get_players_handcard_report(card_distribution,num_players):
             if player_cardsuites[i]==2:
                 same_suite=1 # True ,avoiding boolean
             else:
+                # get_die(6)
                 continue
 
         temp_report=[cards_index,pair_index,same_suite]
@@ -248,37 +259,103 @@ def get_players_handcard_report(card_distribution,num_players):
 # initial analysis for cards in hand+table
 def get_players_allcard_report(cards_playerwise,num_players):
     report=[]
-    for i in range(0,num_players+1):
-        player_cardsuites=get_suite_analysis(cards_playerwise[i])
-        player_cardvalues=get_value_analysis(cards_playerwise[i])
+    # print "\ncards"
+    print cards_playerwise
+    for contents in cards_playerwise:
+        print "\nIndividual cards:"
+        print contents
+        player_cardsuites=get_suite_analysis(contents)
+        player_cardvalues=get_value_analysis(contents)
+        all_cards_index=[]
         pair_index=[]
-        three_ofakind_index=[]
-        four_ofakind_index=[]
+        three_kind_index=[]
+        four_kind_index=[]
+        full_house_index=[]
+        pair_available=False # to check for full house
+        three_kind_available=False # to check for full house
         flush=0 # False ,avoiding boolean
+        royal_flush=0 # False ,avoiding boolean
+        straight_flush_index=[]
+        straight=0 # False ,avoiding boolean
 
-        for i in range(0,13):
-            # two pair
-            if player_cardvalues[i]==2:
-                pair_index.append(i)
-            # three_ofakind_index
-            elif player_cardvalues[i]==3:
-                three_ofakind_index.append(i)
-            # four_ofakind_index
-            elif player_cardvalues[i]==4:
-                four_ofakind_index.append(i)
-            else:
-                continue
-
-            # suite analysis
+        # flush
         for i in range(0,4):
             if player_cardsuites[i]==5:
                 flush=1 # True ,avoiding boolean
             else:
                 continue
-        temp_report=[pair_index,three_ofakind_index,four_ofakind_index,flush]
+
+        # pair, three kind , fourkind ,straight
+        for i in range(0,13):
+            # two pair
+            if player_cardvalues[i]==2:
+                pair_index.append(i)
+                pair_available=True
+            # three_ofakind_index
+            elif player_cardvalues[i]==3:
+                three_kind_index.append(i)
+                three_kind_available=True
+            # four_ofakind_index
+            elif player_cardvalues[i]==4:
+                four_kind_index.append(i)
+            # all cards index used for straight
+            elif player_cardvalues[i]==2 or player_cardvalues[i]==1 or player_cardvalues[i]==3:
+                all_cards_index.append(i)
+            else:
+                # get_die(4)
+                continue
+
+        # full house
+        if three_kind_available==True and pair_available==True:
+            pair_index.sort() # highest index for multiple pair
+            three_kind_index.sort() # highest index in case of multiple pair
+        elif len(three_kind_index)==1 and len(pair_index)==1:
+            full_house_index.append(three_kind_index) # one pair and one one three_kind exist
+            full_house_index.append(pair_index)
+        elif len(three_kind_index)==1 and len(pair_index)==2:
+            full_house_index.append(three_kind_index) # two pair and one one three_kind exist
+            full_house_index.append(pair_index[-1])
+        elif len(three_kind_index)==2:
+            full_house_index.append(three_kind_index[0])
+            full_house_index.append(three_kind_index[1])
+        else:
+            # get_die(5)
+            # continue is causing the loop to skip appending reports
+            pair_index=pair_index
+        # straight
+        if len(all_cards_index)>=5:
+            x=all_cards_index
+            x.sort()
+
+            if x[0]==8 and x[1]==9 and x[2]==10 and x[3]==11 and x[4]==12:
+
+                if flush==1:
+                    royal_flush=1
+                else:
+                    straight=1
+
+            elif (x[0]+1)==x[1] and (x[1]+1)==x[2] and (x[2]+1)==x[3] and (x[3]+1)==x[4]:
+
+                if flush==1:
+                    straight_flush_index=all_cards_index
+                else:
+                    straight=1
+
+            else:
+                # get_die(6)
+                # continue is causing the loop to skip appending reports
+                pair_index=pair_index
+
+        else:
+            # get_die(7)
+            # continue is causing the loop to skip appending reports
+            pair_index=pair_index
+
+        temp_report=[royal_flush,straight_flush_index,four_kind_index,full_house_index,flush,straight,three_kind_index,pair_index]
+        # print "\ntemp report"
+        # print temp_report
         report.append(temp_report)
     return report
-
 
 # determine the winner
 def get_highcard_winner(cards_playerwise,card_distribution,num_players):
@@ -292,55 +369,36 @@ def get_highcard_winner(cards_playerwise,card_distribution,num_players):
     player0_card_index.sort()
     player0_pair_index=card_inhand_reports[0][1]
     player0_samesuite_index=card_inhand_reports[0][2]
-    i=0
+    # winner iterator
+    loop_counter=0
+
     for card_stat in card_inhand_reports:
+        # sorting the cards in increasing order helps in winner determination
         card_stat[0].sort()
-        print "\n%r" %card_stat[0]
+        print "\nHighcard : %r" %(card_stat[0])
+        # compare highest index first
         if card_stat[0][1]>player0_card_index[1] or card_stat[0][0]>player0_card_index[0]:
-            current_winner=i
+            current_winner=loop_counter
         else:
             continue
-        i=i+1
 
+        loop_counter=loop_counter+1
 
     return current_winner
-    # # get the initial reports of cards
-    # player_reports=get_players_allcard_report(cards_playerwise,num_players)
-    # # set initial winner
-    # for
-    # player_cardsuites=[]
-    # player_cardvalues=[]
-    # player_cardvalues_diff =[0,0,0,0,0,0,0,0,0,0,0,0,0]
-    # players_cards_index=[]
-    # card_diff_list=[]
-    # which_player_has_pair=[]
-    # which_card_is_in_pair=[]
-    # winner=0
-    # # get all the suites and cards at one place
-    # for player in range(0,num_players):
-    #     player_cardsuites.append(get_suite_analysis(cards_playerwise[player]))
-    #     player_cardvalues.append(get_value_analysis(cards_playerwise[player]))
-    #
-    # # first player is the base for difference
-    # player0_report=get_first_players_card_report(cards_playerwise[0])
-    # # get the card values difference
-    # for i in range(0,num_players-1):
-    #
-    #     for j in range(0,13):
-    #         # first player is the base for difference
-    #         player_cardvalues_diff[j]=cards_playerwise[i+1][j]-cards_playerwise[0][j]
-    #         # negative index
-    #         if player_cardvalues_diff[j]==-1:
-    #             negative_index=j
-    #         # positive index
-    #         elif player_cardvalues_diff[j]==1:
-    #             positve_index=j
-    #         else:
-    #             get_die(3)
-    #             # check for card combination conditions
-    #
-    #     card_diff_list.append(player_cardvalues_diff)
-    #
+
+# non high card winner
+def get_nonhighcard_winner(cards_playerwise,num_players):
+
+    playercard_reports=get_players_allcard_report(cards_playerwise,num_players)
+    for content in playercard_reports:
+        print "\n"
+        print content
+
+    # temp_report=[royal_flush,straight_flush_index,four_kind_index,full_house_index,
+    # flush,straight,three_kind_index,pair_index]
+
+    return playercard_reports
+
     # royal flush
     # straight flush
     # 4 of a kind
@@ -366,14 +424,18 @@ card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
 # print card_distribution[0:-1]
 cards_playerwise=get_cards_playerwise(card_distribution,num_players)
 # print cards_playerwise
-get_print_cards_inhand(card_distribution,num_players)
+# get_print_cards_inhand(card_distribution,num_players)
 get_print_cards_inhand_and_table(cards_playerwise,num_players)
 
 report0=get_players_handcard_report(cards_playerwise,num_players)
-
 # print "%r" %report0
 
 highcard_winner=get_highcard_winner(cards_playerwise,card_distribution,num_players)
+print "High card Winner: Player%r" % highcard_winner
 
-print "%r" % highcard_winner
-# who wins
+report1=get_players_allcard_report(cards_playerwise,num_players)
+for contents in report1:
+    print "\nIndividual reports:"
+    print contents
+
+# print nonhighcard_winner
