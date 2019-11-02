@@ -6,6 +6,10 @@ hearts=["ha","h2","h3","h4","h5","h6","h7","h8","h9","ht","hj","hq","hk"]
 spades=["sa","s2","s3","s4","s5","s6","s7","s8","s9","st","sj","sq","sk"]
 diamonds=["da","d2","d3","d4","d5","d6","d7","d8","d9","dt","dj","dq","dk"]
 
+cardOrder={ 1: "royal_flush", 1: "straight_flush", 2:"four_kind",
+3:"full_house",4:"flush", 5:"straight", 6:"three_kind",
+7:"two_pair", 8:"pair",9:"high_card"
+}
 # deck
 ordered_deck=clubs+hearts+spades+diamonds
 deck=clubs+hearts+spades+diamonds
@@ -24,7 +28,7 @@ def get_die(status):
     elif status==3:
         print ">> Check for card combination status die(3)"
     elif status>=3:
-        print ""
+        print "No condition met"
         # print ">> get all cards report: die(4)"
     # elif status==5:
     #     print ">> get all cards report: die(5)"
@@ -197,8 +201,8 @@ def get_print_cards_inhand_and_table(cards_playerwise,num_players):
         cards=cards_playerwise[player]
         player_cardsuites = get_suite_analysis(cards)
         player_cardvalues = get_value_analysis(cards)
-        print "\nPlayer%d cards: %r" % (player,cards)
-        print "Player%d cardSuite: %r" % (player,player_cardsuites)
+        # print "\nPlayer%d cards: %r" % (player,cards)
+        # print "Player%d cardSuite: %r" % (player,player_cardsuites)
         print "Player%d cardValues: %r" % (player,player_cardvalues)
 
     return
@@ -212,8 +216,8 @@ def get_print_cards_inhand(card_distribution,num_players):
         cards=card_distribution[player]
         player_cardsuites = get_suite_analysis(cards)
         player_cardvalues = get_value_analysis(cards)
-        print "\nPlayer%d cards: %r" % (player-1,cards)
-        print "Player%d cardSuite: %r" % (player-1,player_cardsuites)
+        # print "\nPlayer%d cards: %r" % (player-1,cards)
+        # print "Player%d cardSuite: %r" % (player-1,player_cardsuites)
         print "Player%d cardValues: %r" % (player-1,player_cardvalues)
 
     return
@@ -325,6 +329,7 @@ def get_players_allcard_report(cards_playerwise,num_players):
             pair=False
             two_pair_index=pair_index
             pair_index=[]
+            two_pair=True
         elif len(pair_index)==1:
             pair=True
         else:
@@ -530,7 +535,7 @@ def get_highcard_winner(card_distribution,num_players):
     for card_stat in card_inhand_reports:
         # sorting the cards in increasing order helps in winner determination
         card_stat[0].sort()
-        print "\nHighcard : %r" %(card_stat[0])
+        # print "\nHighcard : %r" %(card_stat[0])
         # compare highest index first
         if card_stat[0][1]>player0_card_index[1] or card_stat[0][0]>player0_card_index[0]:
             current_winner=loop_counter
@@ -556,8 +561,14 @@ def get_winner(cards_playerwise,card_distribution,num_players):
     # treat table as a special player with just five cards
     # different function is used for getting report to save computation rss
     # append table reports to the allcard report
+    temp_ars=ars
+    temp_ari=ari
     ari.insert(0,tri) # position of players will shift
     ars.insert(0,trs)
+    ars_new=ars
+    ari_new=ari
+    ars=temp_ars
+    ari=temp_ari
 
 
     p_sameCard=[]
@@ -565,94 +576,117 @@ def get_winner(cards_playerwise,card_distribution,num_players):
 
     winby=9 #winning combination of winner
     p=0 #player counter
-    for pr in ars:
+    for pr in ars_new:
         # status based winner(s)-----------------------------------
+
         # royal_flush
-        if pr[0]==True and winby>0:
+        if pr[0]==True and winby>=0:
             if wps[0]==True: # +1 as ars inserted with table report
                 p_sameCard.append(wp)
                 p_sameCard.append(p)
-                which_same_combination=0
+                which_same_combination.append(0)
+                winby=1
             else:
                 wp=p
                 winby=0
+                wps=ars[wp]
         # straight_flush
-        elif pr[1]==True and winby>1:
+        elif pr[1]==True and winby>=1:
             if wps[1]==True: # +1 as ars inserted with table report
                 p_sameCard.append(wp)
                 p_sameCard.append(p)
-                which_same_combination=1
+                which_same_combination.append(1)
+                winby=1
             else:
                 wp=p
                 winby=1
+                wps=ars[wp]
         # four_kind
-        elif pr[2]==True and winby>2:
+        elif pr[2]==True and winby>=2:
             if wps[2]==True: # +1 as ars inserted with table report
                 p_sameCard.append(wp)
                 p_sameCard.append(p)
-                which_same_combination=2
+                which_same_combination.append(2)
+                winby=2
             else:
                 wp=p
                 winby=2
+                wps=ars[wp]
         # full_house
-        elif pr[3]==True and winby>3:
+        elif pr[3]==True and winby>=3:
             if wps[3]==True: # +1 as ars inserted with table report
                 p_sameCard.append(wp)
                 p_sameCard.append(p)
-                which_same_combination=3
+                which_same_combination.append(3)
+                winby=3
             else:
                 wp=p
                 winby=3
+                wps=ars[wp]
         # flush
-        elif pr[4]==True and winby>4:
+        elif pr[4]==True and winby>=4:
             if wps[4]==True: # +1 as ars inserted with table report
                 p_sameCard.append(wp)
                 p_sameCard.append(p)
-                which_same_combination=4
+                which_same_combination.append(4)
+                winby=4
             else:
                 wp=p
                 winby=4
+                wps=ars[wp]
         # straight
-        elif pr[5]==True and winby>5:
+        elif pr[5]==True and winby>=5:
             if wps[5]==True: # +1 as ars inserted with table report
                 p_sameCard.append(wp)
                 p_sameCard.append(p)
-                which_same_combination=5
+                which_same_combination.append(5)
+                winby=5
             else:
                 wp=p
                 winby=5
+                wps=ars[wp]
         # three_kind
-        elif pr[6]==True and winby>6:
+        elif pr[6]==True and winby>=6:
             if wps[6]==True: # +1 as ars inserted with table report
                 p_sameCard.append(wp)
                 p_sameCard.append(p)
-                which_same_combination=6
+                which_same_combination.append(6)
+                winby=6
             else:
                 wp=p
                 winby=6
+                wps=ars[wp]
         # two_pair
-        elif pr[7]==True and winby>7:
+        elif pr[7]==True and winby>=7:
             if wps[7]==True: # +1 as ars inserted with table report
                 p_sameCard.append(wp)
                 p_sameCard.append(p)
-                which_same_combination=7
+                which_same_combination.append(7)
+                winby=7
             else:
                 wp=p
                 winby=7
+                wps=ars[wp]
         # pair
-        elif pr[8]==True and winby>8:
+        elif pr[8]==True and winby>=8:
             if wps[8]==True: # +1 as ars inserted with table report
                 p_sameCard.append(wp)
                 p_sameCard.append(p)
-                which_same_combination=8
+                which_same_combination.append(8)
+                winby=8
             else:
                 wp=p
                 winby=8
+                wps=ars[wp]
         else:
-            wp=wp
+            print "\nPlayer%d"% p
+            get_die(4)
         # player increment
+        print "p: %d and wp: %d and winby: %d" %(p,wp,winby)
         p=p+1
         # Tie breaker-------------------------------------------
+    print "\np_sameCard: %r" %p_sameCard # p_sameCard exists in pairs (1,2)(3,4) etc
+    print "ws_comb: %r" % which_same_combination
         # if len(p_sameCard)>0:
             # w
     winner=wp
@@ -675,18 +709,17 @@ cards_playerwise=get_cards_playerwise(card_distribution,num_players)
 # print cards_playerwise
 # get_print_cards_inhand(card_distribution,num_players)
 get_print_cards_inhand_and_table(cards_playerwise,num_players)
-
-report0=get_players_handcard_report(cards_playerwise,num_players)
+print "table: %r" %(get_value_analysis(card_distribution[0]))
+# report0=get_players_handcard_report(cards_playerwise,num_players)
 # print "%r" %report0
 
 highcard_winner=get_highcard_winner(card_distribution,num_players)
 print "High card Winner: Player%r" % highcard_winner
 
 report_index,report_status=get_players_allcard_report(cards_playerwise,num_players)
-for contents in report_status:
-    print "\nIndividual reports:"
-    print contents
+for i in range(0,len(report_status)):
+    print "\nPlayer%d reports: %r" % (i,report_status[i])
 
 # print winner
 winner,winby=get_winner(cards_playerwise,card_distribution,num_players)
-print "\nPlayer%r WINS by %r"%(winner,winby)
+print "\nPlayer%r WINS by %r"%(winner,cardOrder.get(winby))
