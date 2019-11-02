@@ -391,23 +391,21 @@ def get_tablecard_report(card_distribution):
     straight_flush_index=[]
     straight=0 # False ,avoiding boolean
 
-
-
     # pair, three kind , fourkind ,straight
     for i in range(0,13):
         # two pair
-        if player_cardvalues[i]==2:
+        if table_cardvalues[i]==2:
             pair_index.append(i)
             pair_available=True
         # three_ofakind_index
-        elif player_cardvalues[i]==3:
+        elif table_cardvalues[i]==3:
             three_kind_index.append(i)
             three_kind_available=True
         # four_ofakind_index
-        elif player_cardvalues[i]==4:
+        elif table_cardvalues[i]==4:
             four_kind_index.append(i)
         # all cards index used for straight
-        elif player_cardvalues[i]==2 or player_cardvalues[i]==1 or player_cardvalues[i]==3:
+        elif table_cardvalues[i]==2 or table_cardvalues[i]==1 or table_cardvalues[i]==3:
             all_cards_index.append(i)
         else:
             # get_die(4)
@@ -423,7 +421,6 @@ def get_tablecard_report(card_distribution):
         else:
             continue
 
-
     # full house
     if three_kind_available==True and pair_available==True:
         pair_index.sort() # highest index for multiple pair
@@ -434,6 +431,7 @@ def get_tablecard_report(card_distribution):
         # get_die(5)
         # continue is causing the loop to skip appending reports
         pair_index=pair_index
+
     # straight
     if len(all_cards_index)>=5:
         x=all_cards_index
@@ -463,12 +461,10 @@ def get_tablecard_report(card_distribution):
         # continue is causing the loop to skip appending reports
         pair_index=pair_index
 
-    temp_report=[royal_flush,straight_flush_index,four_kind_index,full_house_index,
-    flush_card_index,straight,three_kind_index,pair_index]
+    report=[royal_flush,straight_flush_index,four_kind_index,full_house_index,
+    flush_cards_index,straight,three_kind_index,pair_index]
     # print "\ntemp report"
     # print temp_report
-    report.append(temp_report)
-
 
     return report
 
@@ -510,11 +506,14 @@ def get_winner(cards_playerwise,card_distribution,num_players):
     highcard_winner=get_highcard_winner(card_distribution,num_players)
     winner=highcard_winner # 0 corresponds to player0
     # winner high card winner if it comes to it
-
+    print "ar: %r" %ar
+    print "tr: %r" %tr
+    print "hr: %r" %hr
+    # if
     # temp_report=[royal_flush,straight_flush_index,four_kind_index,full_house_index,
     # flush,straight,three_kind_index,pair_index]
 
-    return winner, status
+    return winner #,status
 
     # royal flush
     # straight flush
@@ -555,4 +554,6 @@ for contents in report1:
     print "\nIndividual reports:"
     print contents
 
-# print nonhighcard_winner
+# print winner
+winner=get_winner(cards_playerwise,card_distribution,num_players)
+print "\n>>>Player%r<<< WINS"%winner
