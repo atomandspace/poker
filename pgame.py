@@ -336,21 +336,18 @@ def get_players_allcard_report(cards_playerwise,num_players):
             pair=False
 # -------------------------------------------------------------
         # full house
-        if three_kind==True and pair==True or two_pair==True:
+        if three_kind==True and pair==True:
             pair_index.sort() # highest index for multiple pair
             three_kind_index.sort() # highest index in case of multiple pair
             full_house=True
-            if len(three_kind_index)==1 and pair==True:
-                full_house_index.append(three_kind_index) # one pair and one one three_kind exist
-                full_house_index.append(pair_index)
-            elif len(three_kind_index)==1 and two_pair==True:
-                full_house_index.append(three_kind_index) # two pair and one one three_kind exist
-                full_house_index.append(max(two_pair_index))
-            elif len(three_kind_index)==2:
-                full_house_index.append(three_kind_index[0])
-                full_house_index.append(three_kind_index[1])
-            else:
-                pair_index=pair_index
+            full_house_index.append(three_kind_index) # one pair and one one three_kind exist
+            full_house_index.append(pair_index)
+        elif three_kind==True and two_pair==True:
+            three_kind_index.sort() # highest index in case of multiple pair
+            two_pair_index.sort()
+            full_house_index.append(three_kind_index) # two pair and one one three_kind exist
+            full_house_index.append(two_pair_index)
+            full_house=True
         else:
             pair_index=pair_index
 
@@ -554,29 +551,40 @@ def get_winner(cards_playerwise,card_distribution,num_players):
     hri=get_players_handcard_report(card_distribution,num_players) # hand card reports
     highcard_winner=get_highcard_winner(card_distribution,num_players)
     #  wps is winning player report_status
-    wps=ars[highcard_winner] # 0 corresponds to player0
-    wp=highcard_winner # wp is winning player 0 corresponds to player0
+
     # winner high card winner if it comes to it
 
     # treat table as a special player with just five cards
     # different function is used for getting report to save computation rss
     # append table reports to the allcard report
-    temp_ars=ars
-    temp_ari=ari
-    ari.insert(0,tri) # position of players will shift
-    ars.insert(0,trs)
     ars_new=ars
     ari_new=ari
-    ars=temp_ars
-    ari=temp_ari
-
 
     p_sameCard=[]
     which_same_combination=[] # rang(0,9) 9 is high_card and 0 is royal_flush
-
+    wps=ars[highcard_winner] # 0 corresponds to player0
+    wp=highcard_winner # wp is winning player 0 corresponds to player0
     winby=9 #winning combination of winner
+    # analyzing table cards for winby and wps
+    for i in range(0,5):
+        if trs[i]==True:
+            winby=i
+            temp_ars=ars
+            temp_ari=ari
+            ari.insert(0,tri) # position of players will shift
+            ars.insert(0,trs)
+            ars_new=ars
+            ari_new=ari
+            ars=temp_ars
+            ari=temp_ari
+            wp=0
+            wps=trs
+            print "table rules"
+        else:
+            i=i
     p=0 #player counter
     for pr in ars_new:
+        print pr
         # status based winner(s)-----------------------------------
 
         # royal_flush
@@ -589,7 +597,7 @@ def get_winner(cards_playerwise,card_distribution,num_players):
             else:
                 wp=p
                 winby=0
-                wps=ars[wp]
+                wps=ars_new[wp]
         # straight_flush
         elif pr[1]==True and winby>=1:
             if wps[1]==True: # +1 as ars inserted with table report
@@ -600,7 +608,7 @@ def get_winner(cards_playerwise,card_distribution,num_players):
             else:
                 wp=p
                 winby=1
-                wps=ars[wp]
+                wps=ars_new[wp]
         # four_kind
         elif pr[2]==True and winby>=2:
             if wps[2]==True: # +1 as ars inserted with table report
@@ -611,7 +619,7 @@ def get_winner(cards_playerwise,card_distribution,num_players):
             else:
                 wp=p
                 winby=2
-                wps=ars[wp]
+                wps=ars_new[wp]
         # full_house
         elif pr[3]==True and winby>=3:
             if wps[3]==True: # +1 as ars inserted with table report
@@ -622,7 +630,7 @@ def get_winner(cards_playerwise,card_distribution,num_players):
             else:
                 wp=p
                 winby=3
-                wps=ars[wp]
+                wps=ars_new[wp]
         # flush
         elif pr[4]==True and winby>=4:
             if wps[4]==True: # +1 as ars inserted with table report
@@ -633,7 +641,7 @@ def get_winner(cards_playerwise,card_distribution,num_players):
             else:
                 wp=p
                 winby=4
-                wps=ars[wp]
+                wps=ars_new[wp]
         # straight
         elif pr[5]==True and winby>=5:
             if wps[5]==True: # +1 as ars inserted with table report
@@ -644,7 +652,7 @@ def get_winner(cards_playerwise,card_distribution,num_players):
             else:
                 wp=p
                 winby=5
-                wps=ars[wp]
+                wps=ars_new[wp]
         # three_kind
         elif pr[6]==True and winby>=6:
             if wps[6]==True: # +1 as ars inserted with table report
@@ -655,7 +663,7 @@ def get_winner(cards_playerwise,card_distribution,num_players):
             else:
                 wp=p
                 winby=6
-                wps=ars[wp]
+                wps=ars_new[wp]
         # two_pair
         elif pr[7]==True and winby>=7:
             if wps[7]==True: # +1 as ars inserted with table report
@@ -666,7 +674,7 @@ def get_winner(cards_playerwise,card_distribution,num_players):
             else:
                 wp=p
                 winby=7
-                wps=ars[wp]
+                wps=ars_new[wp]
         # pair
         elif pr[8]==True and winby>=8:
             if wps[8]==True: # +1 as ars inserted with table report
@@ -677,12 +685,13 @@ def get_winner(cards_playerwise,card_distribution,num_players):
             else:
                 wp=p
                 winby=8
-                wps=ars[wp]
+                wps=ars_new[wp]
         else:
-            print "\nPlayer%d"% p
+            # wp=highcard_winner
+            # winby=9
             get_die(4)
         # player increment
-        print "p: %d and wp: %d and winby: %d" %(p,wp,winby)
+        print "\np: %d and wp: %d and winby: %d" %(p,wp,winby)
         p=p+1
         # Tie breaker-------------------------------------------
     print "\np_sameCard: %r" %p_sameCard # p_sameCard exists in pairs (1,2)(3,4) etc
@@ -691,7 +700,6 @@ def get_winner(cards_playerwise,card_distribution,num_players):
             # w
     winner=wp
     return winner, winby #,status
-
 
 # --------------------------------MAIN LOOP---------------------------------------------
 
