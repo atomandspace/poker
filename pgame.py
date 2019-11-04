@@ -25,13 +25,12 @@ def get_money_on_table():
 
     money_on_table=int(raw_input("<< How much money on the table?\n"))
 
-    if money_on_table <0:
-        print ">> Begger!"
-    elif money_on_table==0:
-        print ">> I see you are not interested"
-    else:
+    if money_on_table >0:
         print ">> Each person begins with %s" % money_on_table
         print ">> All the best"
+    elif money_on_table==0:
+        print ">> You have to invest atleast something."
+    else:
         get_die(0)
 
     return money_on_table
@@ -503,24 +502,29 @@ def get_highcard_winner(card_distribution,num_players):
     card_inhand_reports=get_players_handcard_report(card_distribution,num_players)
     # initial_winner=0 # player0
     player0_cards=card_inhand_reports[0][0]
-
+    print card_inhand_reports
+    cri=card_inhand_reports
     wp=0
     i=0
-    joint_winner=False
+    joint_winner_status=False
     joint_winner_index=[wp]# rest of the winners will be appended
+    joint_winner=[]
     for card in card_inhand_reports:
-        if max(card[i])>=max(card[wp]) and sum(card[i])>sum(card[wp]):
+        print "card %r"%card[0]
+        if max(card[0])>=max(cri[wp][0]) and sum(card[0])>sum(cri[wp][0]):
             wp=i
-        elif max(card[i])>=max(card[wp]) and sum(card[i])=sum(card[wp]):
-            joint_winner=True
+        elif max(card[0])>=max(cri[wp][0]) and sum(card[0])==sum(cri[wp][0]):
+            joint_winner_status=True
             joint_winner_index[0]=wp
-            joint_winner.append(i)
-        elif max(card[i])<max(card[wp])
+            joint_winner_index.append(i)
+        elif max(card[0])<max(cri[wp][0]):
             wp=wp
         else:
-            die(7)
+            get_die(7)
         i=i+1
-    return wp
+    joint_winner.append(joint_winner_status)
+    joint_winner.append(joint_winner_index)
+    return wp,joint_winner
 
 # non high card winner
 def get_winner(cards_playerwise,card_distribution,num_players):
@@ -699,12 +703,12 @@ card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
 cards_playerwise=get_cards_playerwise(card_distribution,num_players)
 # print cards_playerwise
 # get_print_cards_inhand(card_distribution,num_players)
-get_print_cards_inhand_and_table(cards_playerwise,num_players)
-print "table: %r" %(get_value_analysis(card_distribution[0]))
+# get_print_cards_inhand_and_table(cards_playerwise,num_players)
+# print "table: %r" %(get_value_analysis(card_distribution[0]))
 # report0=get_players_handcard_report(cards_playerwise,num_players)
 # print "%r" %report0
 
-highcard_winner=get_highcard_winner(card_distribution,num_players)
+highcard_winner,joint_winner=get_highcard_winner(card_distribution,num_players)
 print "High card Winner: Player%r" % highcard_winner
 
 report_index,report_status=get_players_allcard_report(cards_playerwise,num_players)
@@ -712,5 +716,5 @@ for i in range(0,len(report_status)):
     print "\nPlayer%d reports: %r" % (i,report_status[i])
 
 # print winner
-winner,winby=get_winner(cards_playerwise,card_distribution,num_players)
-print "\nPlayer%r WINS by %r"%(winner,cardOrder.get(winby))
+# winner,winby=get_winner(cards_playerwise,card_distribution,num_players)
+# print "\nPlayer%r WINS by %r"%(winner,cardOrder.get(winby))
