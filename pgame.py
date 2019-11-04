@@ -18,26 +18,7 @@ random.shuffle(deck)
 
 # loop exit status
 def get_die(status):
-    # if instruction not followed
-    if status==0:
-        print ">> Next time put some money on table! die(0)"
-    elif status==1:
-        print ">> Follow the instructions! die(1)"
-    elif status==2:
-        print ">> This player suite doesn't have cards die(2)"
-    elif status==3:
-        print ">> Check for card combination status die(3)"
-    elif status>=3:
-        print "No condition met"
-        # print ">> get all cards report: die(4)"
-    # elif status==5:
-    #     print ">> get all cards report: die(5)"
-    # elif status==6:
-    #     print ">> get all cards report: die(6)"
-    # elif status==7:
-    #     print ">> get all cards report: die(7)"
-    else:
-        print ">> Good bye!"
+    print "get_die(%d)" %status
 
 # get money on the table
 def get_money_on_table():
@@ -46,13 +27,12 @@ def get_money_on_table():
 
     if money_on_table <0:
         print ">> Begger!"
-        die(0)
     elif money_on_table==0:
         print ">> I see you are not interested"
-        die(0)
     else:
         print ">> Each person begins with %s" % money_on_table
         print ">> All the best"
+        get_die(0)
 
     return money_on_table
 
@@ -72,6 +52,7 @@ def get_num_players():
         num_players=5
     else:
         print ">> Uh oh! something went wrong"
+        get_die(1)
 
     return num_players
 
@@ -148,7 +129,7 @@ def get_suite_analysis(cards):
         elif suite=="s":
             card_suites[3]=card_suites[3]+1
         else:
-            die(2)
+            get_die(2)
             # suite doesn't have cards
 
     return card_suites
@@ -187,7 +168,7 @@ def get_value_analysis(cards):
         elif value=="a":
             card_values[12]=card_values[12]+1
         else:
-            die(2)
+            get_die(3)
             # this player doesn't have cards
     # card_values (twos,threes,fours,fives,sixes,sevens,eights,tens,jacks,queens,kings,aces)
     return card_values
@@ -245,7 +226,7 @@ def get_players_handcard_report(card_distribution,num_players):
                 cards_index.append(i)
                 cards_index.append(i)
             else:
-                # get_die(5)
+                get_die(4)
                 continue
 
         # suite analysis
@@ -253,7 +234,7 @@ def get_players_handcard_report(card_distribution,num_players):
             if player_cardsuites[i]==2:
                 same_suite=1 # True ,avoiding boolean
             else:
-                # get_die(6)
+                get_die(5)
                 continue
 
         temp_report=[cards_index,pair_index,same_suite]
@@ -440,7 +421,7 @@ def get_tablecard_report(card_distribution):
         elif table_cardvalues[i]==2 or table_cardvalues[i]==1 or table_cardvalues[i]==3:
             all_cards_index.append(i)
         else:
-            # get_die(4)
+            get_die(6)
             continue
 
     # flush
@@ -452,6 +433,7 @@ def get_tablecard_report(card_distribution):
             flush_index.sort()
         else:
             continue
+            get_die(7)
 #-------------------------------------------------------------
     # two pair availabilty
     if len(pair_index)>1:
@@ -520,28 +502,25 @@ def get_highcard_winner(card_distribution,num_players):
     # in hand card reports
     card_inhand_reports=get_players_handcard_report(card_distribution,num_players)
     # initial_winner=0 # player0
-    # print card_inhand_reports
-    current_winner=0 # player0
-    player0_card_index=card_inhand_reports[0][0]
-    player0_card_index.sort()
-    player0_pair_index=card_inhand_reports[0][1]
-    player0_samesuite_index=card_inhand_reports[0][2]
-    # winner iterator
-    loop_counter=0
+    player0_cards=card_inhand_reports[0][0]
 
-    for card_stat in card_inhand_reports:
-        # sorting the cards in increasing order helps in winner determination
-        card_stat[0].sort()
-        # print "\nHighcard : %r" %(card_stat[0])
-        # compare highest index first
-        if card_stat[0][1]>player0_card_index[1] or card_stat[0][0]>player0_card_index[0]:
-            current_winner=loop_counter
+    wp=0
+    i=0
+    joint_winner=False
+    joint_winner_index=[wp]# rest of the winners will be appended
+    for card in card_inhand_reports:
+        if max(card[i])>=max(card[wp]) and sum(card[i])>sum(card[wp]):
+            wp=i
+        elif max(card[i])>=max(card[wp]) and sum(card[i])=sum(card[wp]):
+            joint_winner=True
+            joint_winner_index[0]=wp
+            joint_winner.append(i)
+        elif max(card[i])<max(card[wp])
+            wp=wp
         else:
-            continue
-
-        loop_counter=loop_counter+1
-
-    return current_winner
+            die(7)
+        i=i+1
+    return wp
 
 # non high card winner
 def get_winner(cards_playerwise,card_distribution,num_players):
@@ -563,7 +542,7 @@ def get_winner(cards_playerwise,card_distribution,num_players):
     p_sameCard=[]
     which_same_combination=[] # rang(0,9) 9 is high_card and 0 is royal_flush
     wps=ars[highcard_winner] # 0 corresponds to player0
-    wp=highcard_winner # wp is winning player 0 corresponds to player0
+    wp=0 # wp is winning player 0 corresponds to player0
     winby=9 #winning combination of winner
     # analyzing table cards for winby and wps
     for i in range(0,5):
@@ -584,9 +563,10 @@ def get_winner(cards_playerwise,card_distribution,num_players):
             i=i
     p=0 #player counter
     for pr in ars_new:
-        print pr
-        # status based winner(s)-----------------------------------
 
+        # status based winner(s)-----------------------------------
+        print "\nbp: %d and wp: %d and winby: %d" %(p,wp,winby)
+        print "%r"%pr
         # royal_flush
         if pr[0]==True and winby>=0:
             if wps[0]==True: # +1 as ars inserted with table report
@@ -693,6 +673,9 @@ def get_winner(cards_playerwise,card_distribution,num_players):
         # player increment
         print "\np: %d and wp: %d and winby: %d" %(p,wp,winby)
         p=p+1
+
+        # if ars[i][winby]==True
+
         # Tie breaker-------------------------------------------
     print "\np_sameCard: %r" %p_sameCard # p_sameCard exists in pairs (1,2)(3,4) etc
     print "ws_comb: %r" % which_same_combination
