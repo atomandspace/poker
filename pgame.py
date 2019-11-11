@@ -319,20 +319,13 @@ def get_players_allcard_report(cards_playerwise,num_players):
 # -------------------------------------------------------------
         # full house
         if three_kind==True and pair==True:
-            pair_index.sort() # highest index for multiple pair
-            three_kind_index.sort() # highest index in case of multiple pair
             full_house=True
-            full_house_index.append(three_kind_index) # one pair and one one three_kind exist
-            full_house_index.append(pair_index)
+            full_house_index=[three_kind_index,pair_index]
         elif three_kind==True and two_pair==True:
-            three_kind_index.sort() # highest index in case of multiple pair
-            two_pair_index.sort()
-            full_house_index.append(three_kind_index) # two pair and one one three_kind exist
-            full_house_index.append(two_pair_index)
             full_house=True
+            print "full_house_index: %r" %full_house_index
         else:
             pair_index=pair_index
-
 # ------------------------------------------------------------
         # straight
         if len(all_cards_index)>=5:
@@ -525,172 +518,219 @@ def get_highcard_winner(card_distribution,num_players):
         else:
             get_die(7)
         i=i+1
-    joint_winner.append(joint_winner_status)
-    joint_winner.append(joint_winner_index)
-    return wp,joint_winner
+    joint_winner=[joint_winner_status,joint_winner_index]
+    old_winby=9
+    return wp,old_winby,joint_winner
+
+def get_allcard_winner(cards_playerwise,card_distribution,num_players):
+    ari,ars=get_players_allcard_report(cards_playerwise,num_players) # all cards report
+    tri,trs=get_tablecard_report(card_distribution) # table cards report
+
+    wp=0 # wp is winning player 0 corresponds to player0
+    old_winby=9 #winning combination of winner
+    new_winby=9
+    joint_winner_status=False
+    joint_winner_index=[]
+    wps=ars[0]
+    wpi=ari[0]
+    p=0
+    for ps in ars:
+
+        # reset the joint_winner_status if any player has higher than tied cards
+        if old_winby <new_winby:
+            joint_winner_status=False
+            joint_winner_index=[]
+            new_winby=old_winby
+
+        # royal_flush
+        elif ps[0]==True and winby>=0:
+            pi=ari[p][0]
+            wpi=ari[wp][0]
+            if wps[0]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
+                joint_winner_status=True
+                joint_winner_index=[wp,p]
+                wp=p
+                old_winby=0
+                wps=ars[wp]
+            elif wps[0]==True and max(pi)<max(wpi):
+                wp=wp
+            else:
+                wp=p
+                old_winby=0
+                wps=ars[wp]
+        # straight_flush
+        elif ps[1]==True and winby>=1:
+            pi=ari[p][1]
+            wpi=ari[wp][1]
+            if wps[1]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
+                joint_winner_status=True
+                joint_winner_index=[wp,p]
+                wp=p
+                old_winby=1
+                wps=ars[wp]
+            elif wps[1]==True and max(pi)<max(wpi):
+                wp=wp
+            else:
+                wp=p
+                winby=1
+                wps=ars[wp]
+        # four_kind
+        elif ps[2]==True and old_winby>=2:
+            pi=ari[p][2]
+            wpi=ari[wp][2]
+            if wps[2]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
+                joint_winner_status=True
+                joint_winner_index=[wp,p]
+                wp=p
+                old_winby=2
+                wps=ars[wp]
+            elif wps[2]==True and max(pi)<max(wpi):
+                wp=wp
+            else:
+                wp=p
+                old_winby=2
+                wps=ars[wp]
+        # full_house
+        elif ps[3]==True and old_winby>=3:
+            pi=ari[p][3]
+            print pi
+            wpi=ari[wp][3]
+            print wpi
+            if wps[3]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
+                joint_winner_status=True
+                joint_winner_index=[wp,p]
+                wp=p
+                old_winby=3
+                wps=ars[wp]
+
+            elif wps[3]==True and max(pi)<max(wpi):
+                wp=wp
+            else:
+                wp=p
+                old_winby=3
+                wps=ars[wp]
+        # flush
+        elif ps[4]==True and old_winby>=4:
+            pi=ari[p][4]
+            wpi=ari[wp][4]
+            if wps[4]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
+                joint_winner_status=True
+                joint_winner_index=[wp,p]
+                wp=p
+                old_winby=4
+                wps=ars[wp]
+            elif wps[4]==True and max(pi)<max(wpi):
+                wp=wp
+            else:
+                wp=p
+                old_winby=4
+                wps=ars[wp]
+        # straight
+        elif ps[5]==True and old_winby>=5:
+            pi=ari[p][5]
+            wpi=ari[wp][5]
+            if wps[5]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
+                joint_winner_status=True
+                joint_winner_index=[wp,p]
+                wp=p
+                old_winby=5
+                wps=ars[wp]
+            elif wps[5]==True and max(pi)<max(wpi):
+                wp=wp
+            else:
+                wp=p
+                old_winby=5
+                wps=ars[wp]
+        # three_kind
+        elif ps[6]==True and old_winby>=6:
+            pi=ari[p][6]
+            wpi=ari[wp][6]
+            if wps[6]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
+                joint_winner_status=True
+                joint_winner_index=[wp,p]
+                wp=p
+                old_winby=6
+                wps=ars[wp]
+            elif wps[6]==True and max(pi)<max(wpi):
+                wp=wp
+            else:
+                wp=p
+                old_winby=6
+                wps=ars[wp]
+        # two_pair
+        elif ps[7]==True and old_winby>=7:
+            pi=ari[p][7]
+            wpi=ari[wp][7]
+            if wps[7]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
+                joint_winner_status=True
+                joint_winner_index=[wp,p]
+                wp=p
+                old_winby=7
+                wps=ars[wp]
+
+            elif wps[7]==True and max(pi)<max(wpi):
+                wp=wp
+            else:
+                wp=p
+                old_winby=7
+                wps=ars[wp]
+        # pair
+        elif ps[8]==True and old_winby>=8:
+            pi=ari[p][8]
+            wpi=ari[wp][8]
+
+            if wps[8]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p:
+                joint_winner_status=True
+                joint_winner_index=[wp,p]
+                wp=p
+                old_winby=8
+                wps=ars[wp]
+            elif wps[8]==True and max(pi)<max(wpi):
+                wp=wp
+            else:
+                wp=p
+                old_winby=8
+                wps=ars[wp]
+        else:
+            p=p# winby=9
+            # get_die(8)
+        p=p+1
+    # player increment
+    winner=wp
+    joint_winner=[joint_winner_status,joint_winner_index]
+    return winner, old_winby,joint_winner
 
 # non high card winner
 def get_winner(cards_playerwise,card_distribution,num_players):
 
     ari,ars=get_players_allcard_report(cards_playerwise,num_players) # all cards report
     tri,trs=get_tablecard_report(card_distribution) # table cards report
-    hri=get_players_handcard_report(card_distribution,num_players) # hand card reports
-    highcard_winner,joint_winner=get_highcard_winner(card_distribution,num_players)
-    #  wps is winning player report_status
 
-    # winner high card winner if it comes to it
-    print tri
-    print trs
-    # treat table as a special player with just five cards
-    # different function is used for getting report to save computation rss
-    # append table reports to the allcard report
-    ars_new=ars
-    ari_new=ari
-
-    p_sameCard=[]
-    which_same_combination=[] # rang(0,9) 9 is high_card and 0 is royal_flush
-    wps=ars[highcard_winner] # 0 corresponds to player0
-    wp=0 # wp is winning player 0 corresponds to player0
-    winby=9 #winning combination of winner
-
-    p=0 #player counter
-    i=0 #iterator
-    for pr in ars_new:
-        print "\nbp: %d and wp: %d and winby: %d" %(p,wp,winby)
-        print "%r"%pr
-        if trs[i]==True and tri[i]>=pr[i] and pr[i]==True and i>=5:
-            print ">>Table has best combination:"
-            print ">>Player having best cards wins!"
-        else:
-            # status based winner(s)-----------------------------------
-            # royal_flush
-            if pr[0]==True and winby>=0:
-                if wps[0]==True: # +1 as ars inserted with table report
-                    p_sameCard.append(wp)
-                    p_sameCard.append(p)
-                    which_same_combination.append(0)
-                    winby=1
-                else:
-                    wp=p
-                    winby=0
-                    wps=ars_new[wp]
-            # straight_flush
-            elif pr[1]==True and winby>=1:
-                if wps[1]==True: # +1 as ars inserted with table report
-                    p_sameCard.append(wp)
-                    p_sameCard.append(p)
-                    which_same_combination.append(1)
-                    winby=1
-                else:
-                    wp=p
-                    winby=1
-                    wps=ars_new[wp]
-            # four_kind
-            elif pr[2]==True and winby>=2:
-                if wps[2]==True: # +1 as ars inserted with table report
-                    p_sameCard.append(wp)
-                    p_sameCard.append(p)
-                    which_same_combination.append(2)
-                    winby=2
-                else:
-                    wp=p
-                    winby=2
-                    wps=ars_new[wp]
-            # full_house
-            elif pr[3]==True and winby>=3:
-                if wps[3]==True: # +1 as ars inserted with table report
-                    p_sameCard.append(wp)
-                    p_sameCard.append(p)
-                    which_same_combination.append(3)
-                    winby=3
-                else:
-                    wp=p
-                    winby=3
-                    wps=ars_new[wp]
-            # flush
-            elif pr[4]==True and winby>=4:
-                if wps[4]==True: # +1 as ars inserted with table report
-                    p_sameCard.append(wp)
-                    p_sameCard.append(p)
-                    which_same_combination.append(4)
-                    winby=4
-                else:
-                    wp=p
-                    winby=4
-                    wps=ars_new[wp]
-            # straight
-            elif pr[5]==True and winby>=5:
-                if wps[5]==True: # +1 as ars inserted with table report
-                    p_sameCard.append(wp)
-                    p_sameCard.append(p)
-                    which_same_combination.append(5)
-                    winby=5
-                else:
-                    wp=p
-                    winby=5
-                    wps=ars_new[wp]
-            # three_kind
-            elif pr[6]==True and winby>=6:
-                if wps[6]==True: # +1 as ars inserted with table report
-                    p_sameCard.append(wp)
-                    p_sameCard.append(p)
-                    which_same_combination.append(6)
-                    winby=6
-                else:
-                    wp=p
-                    winby=6
-                    wps=ars_new[wp]
-            # two_pair
-            elif pr[7]==True and winby>=7:
-                if wps[7]==True: # +1 as ars inserted with table report
-                    p_sameCard.append(wp)
-                    p_sameCard.append(p)
-                    which_same_combination.append(7)
-                    winby=7
-                else:
-                    wp=p
-                    winby=7
-                    wps=ars_new[wp]
-            # pair
-            elif pr[8]==True and winby>=8:
-                if wps[8]==True: # +1 as ars inserted with table report
-                    p_sameCard.append(wp)
-                    p_sameCard.append(p)
-                    which_same_combination.append(8)
-                    winby=8
-                else:
-                    wp=p
-                    winby=8
-                    wps=ars_new[wp]
+    for ps in ars:
+        for i in range(0,8):
+            # print "%r :: %r :: %r" %(trs[i],tri[i],ps[i])
+            if trs[i]==True and ps[i]==True and tri[i]==ps[i]:
+                print ">>Table has best combination:"
+                print ">>Player having best cards wins!"
+                get_die(9)
+                wp,old_winby,joint_winner=get_highcard_winner(card_distribution,num_players)
             else:
-                # wp=highcard_winner
-                # winby=9
-                get_die(8)
-        # player increment
-        print "\np: %d and wp: %d and winby: %d" %(p,wp,winby)
-        p=p+1
-        i=i+1
-
-        # Tie breaker-------------------------------------------
-    print "\np_sameCard: %r" %p_sameCard # p_sameCard exists in pairs (1,2)(3,4) etc
-    print "ws_comb: %r" % which_same_combination
-        # if len(p_sameCard)>0:
-            # w
+                wp,old_winby,joint_winner=get_allcard_winner(cards_playerwise,card_distribution,num_players)
+                # print "JointWinner: %r, %r" % (joint_winner[0],joint_winner[1])
     winner=wp
-    return winner, winby #,status
+    return winner, old_winby,joint_winner #,status
 
 # --------------------------------MAIN LOOP---------------------------------------------
 
 # number of players
 num_players=get_num_players()
-
 # Money on the table
 money_on_table=get_money_on_table()
 
 # distribute cards
 random.shuffle(deck)
 card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
-# print card_distribution[0:-1]
+print card_distribution[0:-1]
 cards_playerwise=get_cards_playerwise(card_distribution,num_players)
 # print cards_playerwise
 # get_print_cards_inhand(card_distribution,num_players)
@@ -699,13 +739,28 @@ cards_playerwise=get_cards_playerwise(card_distribution,num_players)
 # report0=get_players_handcard_report(cards_playerwise,num_players)
 # print "%r" %report0
 
-highcard_winner,joint_winner=get_highcard_winner(card_distribution,num_players)
-print "High card Winner: Player%r" % highcard_winner
+# highcard_winner,joint_winner=get_highcard_winner(card_distribution,num_players)
+# print "High card Winner: Player%r" % highcard_winner
 
 report_index,report_status=get_players_allcard_report(cards_playerwise,num_players)
 for i in range(0,len(report_status)):
     print "\nPlayer%d reports: %r" % (i,report_status[i])
 
 # print winner
-winner,winby=get_winner(cards_playerwise,card_distribution,num_players)
-print "\nPlayer%r WINS by %r"%(winner,cardOrder.get(winby))
+winner,old_winby,joint_winner=get_winner(cards_playerwise,card_distribution,num_players)
+old_winby_string=cardOrder.get(old_winby)
+if joint_winner[0]==True:
+    print ">>Round winners are: Player%r; They all had %s" % (joint_winner[1], old_winby_string)
+else:
+    print ">>Round winner is Player%d, he won by %s" %(winner, old_winby_string)
+
+# print winning hands
+ks=0
+for contents in report_status:
+    print "Player%d old_winby status: %r" %(ks,contents[old_winby])
+    ks=ks+1
+
+ki=0
+for contents in report_index:
+    print "Player%d old_winby index: %r" %(ki,contents[old_winby])
+    ki=ki+1
