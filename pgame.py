@@ -742,8 +742,8 @@ random.shuffle(deck)
 card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
 
 # test cases : flush
-card_distribution=[['s4', 'd4', 'c4', 'sa', 's6'],
-['sk', 'dk'], ['c9', 's8'], ['h3', 's6'], ['s7', 's9']]
+# card_distribution=[['s4', 'd4', 'c4', 'sa', 's6'],
+# ['sk', 'dk'], ['c9', 's8'], ['h3', 's6'], ['s7', 's9']]
 
 # test cases : straight
 
