@@ -534,7 +534,7 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
     wpi=ari[0]
     p=0
     for ps in ars:
-        print  "p %d and lenp %d"%(p,len(ps))
+        # print  "p %d and lenp %d"%(p,len(ps))
         # reset the joint_winner_status if any player has higher than tied cards
         if old_winby <new_winby:
             joint_winner_status=False
@@ -610,17 +610,8 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
                 wps=ars[wp]
         # flush
         elif ps[4]==True and old_winby>=4:
-            # pi=ari[p][4]
-            # wpi=ari[wp][4]
-            # print "p %r"%p
-            # print ps
-            # print pi
-            # print "sum %r" %sum(pi)
-            # print wp
-            # print wps
-            # print wpi
-            # print sum(wpi)
-
+            pi=ari[p][4]
+            wpi=ari[wp][4]
             if wps[4]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
                 joint_winner_status=True
                 joint_winner_index=[wp,p]
@@ -635,7 +626,6 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
                 wp=3
                 old_winby=4
                 wps=ars[wp]
-                # print "else %d%d" %(p,wp)
         # straight
         elif ps[5]==True and old_winby>=5:
             pi=ari[p][5]
@@ -689,9 +679,6 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
         elif ps[8]==True and old_winby>=8:
             pi=ari[p][8]
             wpi=ari[wp][8]
-            # print ari
-            # print wpi
-            # print pi
             if wps[8]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p:
                 joint_winner_status=True
                 joint_winner_index=[wp,p]
@@ -742,15 +729,15 @@ random.shuffle(deck)
 card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
 
 # test cases : flush
-# card_distribution=[['s4', 'd4', 'c4', 'sa', 's6'],
-# ['sk', 'dk'], ['c9', 's8'], ['h3', 's6'], ['s7', 's9']]
+# card_distribution=[['s4', 'c7', 'c4', 'sa', 's6'],
+# ['sk', 'da'], ['c9', 's8'], ['h3', 's6'], ['s7', 's9']]
 
 # test cases : straight
 
 
 # test cases: pair
-card_distribution=[['cq', 'h5', 'h8', 'sa', 'hq'], ['s2', 'c3'],
-['ct', 'sk'], ['dt', 'sq'], ['h4', 'd5'], ['ha', 'c4']]
+# card_distribution=[['cq', 'h5', 'h8', 'sa', 'hq'], ['s2', 'c3'],
+# ['ct', 'sk'], ['dt', 'sq'], ['h4', 'd5'], ['ha', 'c4']]
 
 
 print card_distribution[0:-1]
