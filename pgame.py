@@ -525,7 +525,7 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
     ari,ars=get_players_allcard_report(cards_playerwise,num_players) # all cards report
     tri,trs=get_tablecard_report(card_distribution) # table cards report
 
-    wp=num_players-2 # wp is winning player 0 corresponds to player0
+    wp=0 # wp is winning player 0 corresponds to player0
     old_winby=9 #winning combination of winner
     new_winby=9
     joint_winner_status=False
@@ -592,9 +592,9 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
         # full_house
         elif ps[3]==True and old_winby>=3:
             pi=ari[p][3]
-            print pi
+            # print pi
             wpi=ari[wp][3]
-            print wpi
+            # print wpi
             if wps[3]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p:
                 joint_winner_status=True
                 joint_winner_index=[wp,p]
@@ -689,7 +689,9 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
         elif ps[8]==True and old_winby>=8:
             pi=ari[p][8]
             wpi=ari[wp][8]
-
+            # print ari
+            # print wpi
+            # print pi
             if wps[8]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p:
                 joint_winner_status=True
                 joint_winner_index=[wp,p]
@@ -704,8 +706,6 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
                 wps=ars[wp]
         # player increment
         p=p+1
-
-
     winner=wp
     joint_winner=[joint_winner_status,joint_winner_index]
     return winner, old_winby,joint_winner
@@ -748,7 +748,9 @@ card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
 # test cases : straight
 
 
-# test cases: flush
+# test cases: pair
+card_distribution=[['cq', 'h5', 'h8', 'sa', 'hq'], ['s2', 'c3'],
+['ct', 'sk'], ['dt', 'sq'], ['h4', 'd5'], ['ha', 'c4']]
 
 
 print card_distribution[0:-1]
