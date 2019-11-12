@@ -281,11 +281,11 @@ def get_players_allcard_report(cards_playerwise,num_players):
                 pair=True
             # three_ofakind_index
             elif player_cardvalues[i]==3:
-                three_kind_index.append(i)
+                three_kind_index=i
                 three_kind=True
             # four_ofakind_index
             elif player_cardvalues[i]==4:
-                four_kind_index.append(i)
+                four_kind_index=i
                 four_kind=True
             # all cards index used for straight
             elif player_cardvalues[i]==2 or player_cardvalues[i]==1 or player_cardvalues[i]==3:
@@ -296,17 +296,15 @@ def get_players_allcard_report(cards_playerwise,num_players):
 # -------------------------------------------------------------
         # flush
         for i in range(0,4):
+            # print "%dpl>> %r"%(i,player_cardsuites[i])
 
             if player_cardsuites[i]==5:
                 flush=True # True ,avoiding boolean
                 flush_index=all_cards_index
                 flush_index.sort()
-            else:
-                continue
+                # print "Player%d, %r"%(i,flush_index)
+                # print "suites %r and cards %r"%(player_cardsuites,player_cardvalues)
 #-------------------------------------------------------------
-        # two pair availabilty
-        # this section is exclusively placed after full house analysis
-        # avoid conflicts with current full_house analysis algo
         if len(pair_index)>1:
             pair=False
             two_pair_index=pair_index
@@ -320,10 +318,11 @@ def get_players_allcard_report(cards_playerwise,num_players):
         # full house
         if three_kind==True and pair==True:
             full_house=True
-            full_house_index=[three_kind_index,pair_index]
+            # pair and two pair index have same source
+            full_house_index=[three_kind_index,max(pair_index)]
         elif three_kind==True and two_pair==True:
             full_house=True
-            print "full_house_index: %r" %full_house_index
+            # print "full_house_index: %r" %full_house_index
         else:
             pair_index=pair_index
 # ------------------------------------------------------------
@@ -526,7 +525,7 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
     ari,ars=get_players_allcard_report(cards_playerwise,num_players) # all cards report
     tri,trs=get_tablecard_report(card_distribution) # table cards report
 
-    wp=0 # wp is winning player 0 corresponds to player0
+    wp=num_players-2 # wp is winning player 0 corresponds to player0
     old_winby=9 #winning combination of winner
     new_winby=9
     joint_winner_status=False
@@ -535,7 +534,7 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
     wpi=ari[0]
     p=0
     for ps in ars:
-
+        print  "p %d and lenp %d"%(p,len(ps))
         # reset the joint_winner_status if any player has higher than tied cards
         if old_winby <new_winby:
             joint_winner_status=False
@@ -543,7 +542,7 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
             new_winby=old_winby
 
         # royal_flush
-        elif ps[0]==True and winby>=0:
+        elif ps[0]==True and old_winby>=0:
             pi=ari[p][0]
             wpi=ari[wp][0]
             if wps[0]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
@@ -559,7 +558,7 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
                 old_winby=0
                 wps=ars[wp]
         # straight_flush
-        elif ps[1]==True and winby>=1:
+        elif ps[1]==True and old_winby>=1:
             pi=ari[p][1]
             wpi=ari[wp][1]
             if wps[1]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
@@ -596,7 +595,7 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
             print pi
             wpi=ari[wp][3]
             print wpi
-            if wps[3]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
+            if wps[3]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p:
                 joint_winner_status=True
                 joint_winner_index=[wp,p]
                 wp=p
@@ -611,20 +610,32 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
                 wps=ars[wp]
         # flush
         elif ps[4]==True and old_winby>=4:
-            pi=ari[p][4]
-            wpi=ari[wp][4]
+            # pi=ari[p][4]
+            # wpi=ari[wp][4]
+            # print "p %r"%p
+            # print ps
+            # print pi
+            # print "sum %r" %sum(pi)
+            # print wp
+            # print wps
+            # print wpi
+            # print sum(wpi)
+
             if wps[4]==True and max(pi)>=max(wpi)and sum(pi)==sum(wpi)and wp!=p: # +1 as ars inserted with table report
                 joint_winner_status=True
                 joint_winner_index=[wp,p]
                 wp=p
                 old_winby=4
                 wps=ars[wp]
+                print "if"
             elif wps[4]==True and max(pi)<max(wpi):
                 wp=wp
+                print "elif"
             else:
-                wp=p
+                wp=3
                 old_winby=4
                 wps=ars[wp]
+                # print "else %d%d" %(p,wp)
         # straight
         elif ps[5]==True and old_winby>=5:
             pi=ari[p][5]
@@ -691,11 +702,10 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
                 wp=p
                 old_winby=8
                 wps=ars[wp]
-        else:
-            p=p# winby=9
-            # get_die(8)
+        # player increment
         p=p+1
-    # player increment
+
+
     winner=wp
     joint_winner=[joint_winner_status,joint_winner_index]
     return winner, old_winby,joint_winner
@@ -727,20 +737,23 @@ num_players=get_num_players()
 # Money on the table
 money_on_table=get_money_on_table()
 
-# distribute cards
+# random distribute cards
 random.shuffle(deck)
 card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
+
+# test cases : flush
+card_distribution=[['s4', 'd4', 'c4', 'sa', 's6'],
+['sk', 'dk'], ['c9', 's8'], ['h3', 's6'], ['s7', 's9']]
+
+# test cases : straight
+
+
+# test cases: flush
+
+
 print card_distribution[0:-1]
 cards_playerwise=get_cards_playerwise(card_distribution,num_players)
-# print cards_playerwise
-# get_print_cards_inhand(card_distribution,num_players)
-# get_print_cards_inhand_and_table(cards_playerwise,num_players)
-# print "table: %r" %(get_value_analysis(card_distribution[0]))
-# report0=get_players_handcard_report(cards_playerwise,num_players)
-# print "%r" %report0
 
-# highcard_winner,joint_winner=get_highcard_winner(card_distribution,num_players)
-# print "High card Winner: Player%r" % highcard_winner
 
 report_index,report_status=get_players_allcard_report(cards_playerwise,num_players)
 for i in range(0,len(report_status)):
