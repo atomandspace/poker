@@ -495,33 +495,41 @@ def get_highcard_winner(card_distribution,num_players):
 
     # in hand card reports
     cih=get_players_handcard_report(card_distribution,num_players)
+
+    # init_cihsum=sum(cih[0])
+    # hc_winner=0
+    # for cards in cih:
+
     # initial_winner=0 # player0
     player0_cards=cih[0][0]
     wp=0
     i=0
     joint_winner_status=False
-    joint_winner_index=[wp]# rest of the winners will be appended
+    joint_winner_index=[]# rest of the winners will be appended
     joint_winner=[]
     for card in cih:
-        print "card %r"%card[0]
-        if max(card[0])>=max(cih[wp][0]) and sum(card[0])>sum(cih[wp][0]):
+        # print "card %r"%card[0]
+        if max(card[0])>max(cih[wp][0]):
             wp=i
-        elif max(card[0])>=max(cih[wp][0]) and sum(card[0])==sum(cih[wp][0]):
+        elif max(card[0])==max(cih[wp][0]) and sum(card[0])==sum(cih[wp][0]) and wp!=i:
             joint_winner_status=True
-            joint_winner_index[0]=wp
-            joint_winner_index.append(i)
+            joint_winner_index=[wp,i]
         elif max(card[0])<max(cih[wp][0]):
             wp=wp
         else:
             get_die(7)
         i=i+1
     joint_winner=[joint_winner_status,joint_winner_index]
-    old_winby=9
-    return wp,old_winby,joint_winner
+    winby=9
+    print joint_winner_index
+    return wp,winby,joint_winner
 
-def get_allcard_winner(cards_playerwise,card_distribution,num_players):
+def get_winner(cards_playerwise,card_distribution,num_players):
     ari,ars=get_players_allcard_report(cards_playerwise,num_players) # all cards report
     tri,trs=get_tablecard_report(card_distribution) # table cards report
+
+    ari.append(tri)
+    ars.append(trs)
 
     p_bestcardcomb=[]
     # get the max possible cards for the player
@@ -564,28 +572,20 @@ def get_allcard_winner(cards_playerwise,card_distribution,num_players):
     if len(joint_winner_index)==1:
         joint_winner_status=False
 
+    # table is winner or one of the winners
+    if winner==num_players or max(joint_winner_index)==num_players: # table is direct winner or joint winner
+        hc_winner,winby,joint_winner_hc=get_highcard_winner(card_distribution,num_players)
+        winner=hc_winner
+        if joint_winner_hc[0]==True:
+            joint_winner_index=joint_winners_hc[1]
+            joint_winner_status=True
+        else:
+            joint_winner_status=False
+            joint_winner_index=[]
+
     joint_winner=[joint_winner_status,joint_winner_index]
     return winner, winby,joint_winner
 
-# non high card winner
-def get_winner(cards_playerwise,card_distribution,num_players):
-
-    ari,ars=get_players_allcard_report(cards_playerwise,num_players) # all cards report
-    tri,trs=get_tablecard_report(card_distribution) # table cards report
-
-    for ps in ars:
-        for i in range(0,9):
-            # print "loop %d" %i
-            if trs[i]==True and ps[i]==True and tri[i]==ps[i]:
-                print ">>Table has best combination:"
-                print ">>Player having best cards wins!"
-                get_die(9)
-                wp,old_winby,joint_winner=get_highcard_winner(card_distribution,num_players)
-            else:
-                wp,old_winby,joint_winner=get_allcard_winner(cards_playerwise,card_distribution,num_players)
-                # print "JointWinner: %r, %r" % (joint_winner[0],joint_winner[1])
-    winner=wp
-    return winner, old_winby,joint_winner #,status
 
 # --------------------------------MAIN LOOP---------------------------------------------
 
@@ -617,13 +617,16 @@ card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
 # test cases: joint winners
 # card_distribution=[['d5', 'c3', 'ht', 's5', 'c8'], ['c6', 'cj'], ['h2', 's8'], ['ha', 's7'], ['d7', 'h8']]
 
+# test case: table is winner
+card_distribution=[['h6', 'dk', 'h4', 'd6', 'cq'], ['ct', 's3'], ['s7', 'ha'], ['h9', 'sa'], ['hj', 'h5']]
+
 print card_distribution[0:-1]
 cards_playerwise=get_cards_playerwise(card_distribution,num_players)
 
 
 report_index,report_status=get_players_allcard_report(cards_playerwise,num_players)
-for i in range(0,len(report_status)):
-    print "\nPlayer%d reports: %r" % (i,report_status[i])
+# # for i in range(0,len(report_status)):
+#     print "\nPlayer%d reports: %r" % (i,report_status[i])
 
 # print winner
 winner,old_winby,joint_winner=get_winner(cards_playerwise,card_distribution,num_players)
@@ -634,12 +637,12 @@ else:
     print ">>Round winner is Player%d, he won by %s" %(winner, old_winby_string)
 
 # print winning hands
-ks=0
-for contents in report_status:
-    print "Player%d old_winby status: %r" %(ks,contents[old_winby])
-    ks=ks+1
+# ks=0
+# for contents in report_status:
+#     print "Player%d old_winby status: %r" %(ks,contents[old_winby])
+#     ks=ks+1
 
-ki=0
-for contents in report_index:
-    print "Player%d old_winby index: %r" %(ki,contents[old_winby])
-    ki=ki+1
+# ki=0
+# for contents in report_index:
+#     print "Player%d old_winby index: %r" %(ki,contents[old_winby])
+#     ki=ki+1
