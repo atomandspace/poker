@@ -317,7 +317,7 @@ def get_players_allcard_report(cards_playerwise,num_players):
         if three_kind==True and pair==True:
             full_house=True
             # pair and two pair index have same source
-            full_house_index=[three_kind_index,max(pair_index)]
+            full_house_index=[max(three_kind_index),max(pair_index)]
         elif three_kind==True and two_pair==True:
             full_house=True
             # print "full_house_index: %r" %full_house_index
@@ -441,14 +441,11 @@ def get_tablecard_report(card_distribution):
 
     # full house
     if three_kind==True and pair==True:
-        pair_index.sort() # highest index for multiple pair
-        three_kind_index.sort() # highest index in case of multiple pair
-        full_house_index.append(three_kind_index)
-        full_house_index.append(pair_index)
+        full_house_index=[three_kind_index[0], max(pair_index)]
     else:
         # get_die(5)
         # continue is causing the loop to skip appending reports
-        pair_index=pair_index
+        pass
 # ------------------------------------------------------------
     # straight
     if len(all_cards_index)>=5:
@@ -554,6 +551,7 @@ def get_winner(cards_playerwise,card_distribution,num_players):
     # print p_bc_combination
     joint_winner_status=False
     joint_winner_index=[]
+    print ari[min(p_bc_combination)][bc_combination]
     first_index_sum=sum(ari[min(p_bc_combination)][bc_combination])
 
     winner=min(p_bc_combination)
@@ -598,6 +596,11 @@ money_on_table=get_money_on_table()
 # random distribute cards
 random.shuffle(deck)
 card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
+print "Cards on table: %s" %card_distribution[0]
+i=0
+for contents in card_distribution[1:-1]:
+    print "Player%d: %s" %(i,contents)
+    i=i+1
 
 # test cases : flush
 # card_distribution=[['s4', 'c7', 'c4', 'sa', 's6'],
@@ -621,10 +624,13 @@ card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
 # test case: table is winner
 # card_distribution=[['h6', 'dk', 'h4', 'd6', 'cq'], ['ct', 's3'], ['s7', 'ha'], ['h9', 'sa'], ['hj', 'h5']]
 
-card_distribution=[['h6', 'h4', 'sk', 'd7', 'c6'], ['dk', 'h8'], ['s9', 'cj'], ['d2', 'd6'], ['hj', 'ca']]
+# card_distribution=[['h6', 'h4', 'sk', 'd7', 'c6'], ['dk', 'h8'], ['s9', 'cj'], ['d2', 'd6'], ['hj', 'ca']]
+
+# test case full house
+card_distribution=[['d9', 'c2', 'dj', 'c9', 'dk'], ['d5', 'sa'],['h5', 'h6'],['cj', 'sj'],['da', 'h2']]
 
 
-print card_distribution[0:-1]
+# print card_distribution[0:-1]
 cards_playerwise=get_cards_playerwise(card_distribution,num_players)
 
 
