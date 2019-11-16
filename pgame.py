@@ -281,11 +281,11 @@ def get_players_allcard_report(cards_playerwise,num_players):
                 pair=True
             # three_ofakind_index
             elif player_cardvalues[i]==3:
-                three_kind_index=i
+                three_kind_index=[i]
                 three_kind=True
             # four_ofakind_index
             elif player_cardvalues[i]==4:
-                four_kind_index=i
+                four_kind_index=[i]
                 four_kind=True
             # all cards index used for straight
             elif player_cardvalues[i]==2 or player_cardvalues[i]==1 or player_cardvalues[i]==3:
@@ -404,11 +404,11 @@ def get_tablecard_report(card_distribution):
             pair=True
         # three_ofakind_index
         elif table_cardvalues[i]==3:
-            three_kind_index.append(i)
+            three_kind_index=[i]
             three_kind=True
         # four_ofakind_index
         elif table_cardvalues[i]==4:
-            four_kind_index.append(i)
+            four_kind_index=[i]
             four_kind=True
         # all cards index used for straight
         elif table_cardvalues[i]==2 or table_cardvalues[i]==1 or table_cardvalues[i]==3:
@@ -555,6 +555,7 @@ def get_winner(cards_playerwise,card_distribution,num_players):
     joint_winner_status=False
     joint_winner_index=[]
     first_index_sum=sum(ari[min(p_bc_combination)][bc_combination])
+
     winner=min(p_bc_combination)
     winby=bc_combination
     # print winby
@@ -618,7 +619,10 @@ card_distribution, card_distribution_all=get_distribute_cards(num_players,deck)
 # card_distribution=[['d5', 'c3', 'ht', 's5', 'c8'], ['c6', 'cj'], ['h2', 's8'], ['ha', 's7'], ['d7', 'h8']]
 
 # test case: table is winner
-card_distribution=[['h6', 'dk', 'h4', 'd6', 'cq'], ['ct', 's3'], ['s7', 'ha'], ['h9', 'sa'], ['hj', 'h5']]
+# card_distribution=[['h6', 'dk', 'h4', 'd6', 'cq'], ['ct', 's3'], ['s7', 'ha'], ['h9', 'sa'], ['hj', 'h5']]
+
+card_distribution=[['h6', 'h4', 'sk', 'd7', 'c6'], ['dk', 'h8'], ['s9', 'cj'], ['d2', 'd6'], ['hj', 'ca']]
+
 
 print card_distribution[0:-1]
 cards_playerwise=get_cards_playerwise(card_distribution,num_players)
@@ -629,8 +633,8 @@ report_index,report_status=get_players_allcard_report(cards_playerwise,num_playe
 #     print "\nPlayer%d reports: %r" % (i,report_status[i])
 
 # print winner
-winner,old_winby,joint_winner=get_winner(cards_playerwise,card_distribution,num_players)
-old_winby_string=cardOrder.get(old_winby)
+winner,winby,joint_winner=get_winner(cards_playerwise,card_distribution,num_players)
+old_winby_string=cardOrder.get(winby)
 if joint_winner[0]==True:
     print ">>Round winners are: Player%r; They all had %s" % (joint_winner[1], old_winby_string)
 else:
